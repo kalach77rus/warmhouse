@@ -1,1 +1,5 @@
 .DS_Store
+.idea
+.gigaide
+apps/postgres_data
+!apps/postgres_data/pg_hba.conf

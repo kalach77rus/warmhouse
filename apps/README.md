@@ -58,3 +58,4 @@ A Postman collection is provided for testing the API. Import the `smarthome-api.
 - `PUT /api/v1/sensors/:id` - Update a sensor
 - `DELETE /api/v1/sensors/:id` - Delete a sensor
 - `PATCH /api/v1/sensors/:id/value` - Update a sensor's value and status
+- `GET /temperature/:location` - Get a current sensor's value
