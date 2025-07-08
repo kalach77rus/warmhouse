@@ -1,0 +1,91 @@
+@startuml
+
+entity User {
+    * id : int
+    email : string
+    password : string
+}
+
+entity UserDetailed {
+    * id : int
+    avatar : blob
+    first_name : string
+    second_name : string
+    timezone : int
+}
+
+entity House {
+    * id : int
+    relay_id : int
+    name : string
+    description : string
+    timezone : int
+}
+
+entity Device {
+    * id : int
+    name : string
+    serial_number : string
+    type_id : int
+    house_id : int
+    status : int
+}
+
+entity DeviceType {
+    * id : int
+    category : int
+    name : string
+    vendor : string
+    model : string
+}
+
+entity DeviceCategory {
+    * id : int
+    name : string
+}
+
+entity Relay {
+    * id : int
+    name : string
+    serial_number : string
+    host : string
+    port : int
+    status : int
+}
+
+entity AutomationScenario {
+    * id : int
+    user_id : int
+    title : string
+    description : string
+    action_json : string
+}
+
+entity HouseUsers {
+    house_id : int
+    user_id : int
+}
+
+entity HouseScenarios {
+    house_id : int
+    scenario_id : int
+}
+
+' User
+User ||--|| UserDetailed
+User ||--o{ HouseUsers
+User ||--|{ AutomationScenario
+
+' House devices
+House ||--o{ HouseUsers
+House ||--|| Relay
+Relay ||--o{ Device
+Device }o--|| DeviceType
+DeviceType }o--|| DeviceCategory
+
+' Automation
+AutomationScenario }|--|| DeviceCategory
+AutomationScenario }|--|| HouseScenarios
+House ||--|{ HouseScenarios
+
+@enduml

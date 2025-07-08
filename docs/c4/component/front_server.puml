@@ -1,0 +1,34 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(Customer, "Customer", "End user of the Warm House platform.")
+
+Container(UserService,       "User Service",       "Go, gRPC",  "Manages users & auth")
+Container(TelemetryService,  "Telemetry Service",  "Go, MQTT",  "Collects & routes device data")
+Container(AutomationService, "Automation Service", "Go, REST",  "Executes automation rules")
+
+Boundary(APIGateway, "API Gateway") {
+    Component(CustomerUI, "Customer Web UI", "React", "Used by end users.")
+    Component(RoutingLayer, "Routing Layer", "React", "Routes requests from UI to respective services.")
+    Component(DeviceLayer, "Device Layer", "React", "Routes requests from UI to respective services.")
+    Component(UserLayer, "User Layer", "React", "Routes requests from UI to respective services.")
+    Component(AutomationLayer, "Automation Layer", "React", "Routes requests from UI to respective services.")
+    Component(AuthMiddleware, "Auth Middleware", "React", "Validates access tokens.")
+}
+
+' Internal relations
+Rel(CustomerUI, RoutingLayer, "Sends API requests")
+Rel(RoutingLayer, DeviceLayer, "Pass device request in session")
+Rel(RoutingLayer, AutomationLayer, "Pass automation request in session")
+Rel(RoutingLayer, UserLayer, "Manages user session")
+Rel(UserLayer, AuthMiddleware, "Validates access")
+
+' External relations
+Rel(Customer, CustomerUI, "Sends API requests via WEB view")
+Rel(UserLayer, UserService, "Interact with user's personal account")
+Rel(AuthMiddleware, UserService, "Create session")
+Rel(AutomationLayer, AutomationService, "Manage automation rule")
+Rel(DeviceLayer, TelemetryService, "Proxy device request")
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(DeviceService, "Device Service", "Go, gRPC")
+
+ComponentDb(Database, "Postgres", "Stores automation rules")
+
+Container_Ext(CustomerRelay,  "Warm House Relay",   "Customer Relay")
+Container_Ext(CustomerDevice, "Smart Home Devices", "Any customer device")
+
+Boundary(RelayService, "Relay Service") {
+    Component(ControllerLayer,        "Controller Layer",         "Go, gRPC", "Manages request routing")
+    Component(ServiceLayer,           "Service Layer",            "Go", "Implements request preparation logic")
+    Component(RequestPerformerLayer,  "Request Performer Layer",  "Go, REST", "Request sender")
+    Component(RepositoryLayer,        "Repository Layer",         "Go", "Handles persistence")
+}
+
+' Internal relations
+Rel(ControllerLayer,        ServiceLayer,           "Generate logic impl by capabilities")
+Rel(ServiceLayer,           RequestPerformerLayer,  "Get device metainfo to parse request")
+Rel(RequestPerformerLayer,  RepositoryLayer,        "Mark request as SUBMITTED")
+
+' External relations
+Rel(DeviceService,          ControllerLayer,  "Pass device request to submitter")
+Rel(RequestPerformerLayer,  CustomerRelay,    "Proxy request to customer's relay")
+Rel(CustomerRelay,          CustomerDevice,   "Pass request to device")
+
+Rel(RepositoryLayer, Database, "Interacts with DB")
+
+@enduml

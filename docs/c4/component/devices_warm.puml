@@ -1,0 +1,32 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+Container(TelemetryService,  "Telemetry Service", "Go, MQTT", "Collects & routes device data")
+Container(RelayService,      "API Gateway",       "Go, gRPC", "Routes UI requests to customer's device")
+
+ComponentDb(Database, "Postgres", "Stores automation rules")
+
+Boundary(DeviceService, "Warm Device Service") {
+    Component(ControllerLayer,        "Controller Layer",         "Go, MQTT", "Manages device routes")
+    Component(ServiceLayer,           "Service Layer",            "Go", "Implements device logic")
+    Component(ModelLayer,             "Model Layer",              "Go", "Registers & configures warm devices")
+    Component(RequestPerformerLayer,  "Request Performer Layer",  "Go, gRPC", "Implements device logic")
+    Component(RepositoryLayer,        "Repository Layer",         "Go", "Handles persistence")
+}
+
+' Internal relations
+Rel(ControllerLayer, ModelLayer, "Check device capabilities")
+Rel(ControllerLayer, ServiceLayer, "Generate logic impl by capabilities")
+Rel(ServiceLayer, RepositoryLayer, "Sync user info with existing data")
+Rel(ServiceLayer, ModelLayer, "Get device metainfo to parse request")
+Rel(ServiceLayer, RequestPerformerLayer, "Proxy request to customer's relay")
+
+' External relations
+Rel(TelemetryService, ControllerLayer, "Takes user request filtered by device_type_id")
+Rel(RequestPerformerLayer, RelayService, "Proxy request to customer's relay")
+
+Rel(RepositoryLayer, Database, "Interacts with DB")
+
+@enduml

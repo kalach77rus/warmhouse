@@ -1,0 +1,13 @@
+@startuml ContextDiagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "Customer", "End user of the smart home platform.")
+
+System(system, "Warm House", "Monolithic Smart Home management application")
+
+System_Ext(sensor, "Smart Home Devices", "hysical setup: sensors, cameras, actuators.")
+
+Rel(user, system, "Uses via Web UI", "HTTP")
+Rel(system, sensor, "Communicates with devices via telemetry", "HTTP")
+
+@enduml

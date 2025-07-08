@@ -1,0 +1,50 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(Customer, "Customer", "End user of the Warm House platform.")
+
+Container_Ext(CustomerRelay,  "Warm House Relay",   "Customer Relay")
+Container_Ext(CustomerDevice, "Smart Home Devices", "Any customer device")
+
+System_Boundary(WarmHouse, "Warm House Backend Platform") {
+  Container(CustomerUI, "Customer Web UI",  "React",  "Customer web interface")
+
+  System_Boundary(Devices, "Warm House Devices") {
+    Container(DeviceWarmService,  "Warm Device Service",  "Go, MQTT", "Registers & configures warm devices")
+    Container(DeviceLightService, "Light Device Service", "Go, MQTT", "Registers & configures light devices")
+    Container(DevicePacsService,  "PACS Service",         "Go, MQTT", "Registers & configures PACS devices")
+    Container(RelayService,       "API Gateway",          "Go, gRPC", "Routes UI requests to customer's device")
+  }
+
+  Container(UserService,       "User Service",       "Go, gRPC",      "Manages users & auth")
+  Container(TelemetryService,  "Telemetry Service",  "Go, MQTT",      "Collects & routes device data")
+  Container(AutomationService, "Automation Service", "Go, REST",      "Executes automation rules")
+  ContainerDb(Database,        "Postgres",           "Relational DB", "Stores platform data")
+}
+
+' User flows
+Rel(Customer,   CustomerUI,         "Uses web UI")
+Rel(CustomerUI, UserService,        "Reads/writes users")
+Rel(CustomerUI, AutomationService,  "User scenario configuration")
+Rel(CustomerUI, TelemetryService,   "Send user request to device request bus")
+
+' AutomationService
+Rel(AutomationService, TelemetryService,  "Send auto request to device request bus")
+
+' TelemetryService
+Rel(TelemetryService, DeviceWarmService,  "Reads & parse specific request")
+Rel(TelemetryService, DeviceLightService, "Reads & parse specific request")
+Rel(TelemetryService, DevicePacsService,  "Reads & parse specific request")
+Rel(DeviceWarmService, RelayService,      "Send prepared request to relay")
+Rel(DeviceLightService, RelayService,     "Send prepared request to relay")
+Rel(DevicePacsService, RelayService,      "Send prepared request to relay")
+Rel(RelayService, CustomerRelay,          "Proxy request to customer's relay")
+Rel(CustomerRelay, CustomerDevice,        "Pass request to device")
+
+' Persistence
+Rel(UserService,       Database, "Reads/writes users")
+Rel(AutomationService, Database, "Reads/writes user rules")
+Rel(TelemetryService,  Database, "Reads/writes statistics")
+Rel(Devices,           Database, "Reads/writes devices info")
+@enduml

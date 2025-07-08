@@ -1,0 +1,163 @@
+{
+	"info": {
+		"_postman_id": "7f913e37-85a6-452f-b8a3-8333f94f5646",
+		"name": "Yarch01-UserService",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "37273587"
+	},
+	"item": [
+		{
+			"name": "register",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "api/v1/register",
+					"host": [
+						"api"
+					],
+					"path": [
+						"v1",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "createSession",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"example@exmaple.com\",\r\n    \"password\": \"admin12345\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "api/v1/createSession",
+					"host": [
+						"api"
+					],
+					"path": [
+						"v1",
+						"createSession"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "addHouse",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"string\",\r\n    \"description\": \"string\",\r\n    \"timezone\": 3,\r\n    \"relay\" : {\r\n        \"name\": \"string\",\r\n        \"serial_number\": \"string\",\r\n        \"host\": \"127.0.0.1\",\r\n        \"port\": 8080\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "api/v1/addHouse",
+					"host": [
+						"api"
+					],
+					"path": [
+						"v1",
+						"addHouse"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "updateUser",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"avatar\": \"base64string\",\r\n    \"first_name\": \"string\",\r\n    \"second_name\": \"string\",\r\n    \"timezone\": 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "api/v1/updateUser",
+					"host": [
+						"api"
+					],
+					"path": [
+						"v1",
+						"updateUser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "userInfo",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "api/v1/userInfo",
+					"host": [
+						"api"
+					],
+					"path": [
+						"v1",
+						"userInfo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "removeHouse",
+			"request": {
+				"auth": {
+					"type": "bearer"
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "api/v1/removeHouse?relay_id",
+					"host": [
+						"api"
+					],
+					"path": [
+						"v1",
+						"removeHouse"
+					],
+					"query": [
+						{
+							"key": "relay_id",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
