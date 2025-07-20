@@ -18,15 +18,16 @@ services:
       - smarthome-network
     volumes:
       - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql
-  ## тут нужно добавить настройки
 
   temperature-api:
     build:
       context: ./temperature-api
       dockerfile: Dockerfile
     container_name: temperature-api
-  ## тут нужно добавить приложение
-
+    networks:
+      - smarthome-network
+    ports:
+      - 8081:8081
   app:
     build:
       context: ./smart_home

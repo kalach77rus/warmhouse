@@ -1,0 +1,12 @@
+@startuml
+!include <C4/C4_Container>
+
+Person(customerAlias, "Customer", "Владелец умного дома")
+Person(workerAlias, "Employee", "Сотрудник сервиса Warm House")
+System(systemAlias, "Warm House System", "Система управления умным домом")
+System_Ext(extSystemAlias, "Smart device", "Устройство из умного дома пользователя")
+
+Rel(customerAlias, systemAlias, "Просмотр и управление", "Просмотр температуры и списка устройств, включение и выключение отопления")
+Rel(workerAlias, systemAlias, "Настройка", "Регистрация/удаление устройств")
+Rel_U(systemAlias, extSystemAlias, "Телеметрия и управление", "Получение значения температуры, включение/выключение отопления")
+@enduml
