@@ -1,0 +1,37 @@
+@startuml
+!include <C4/C4_Container>
+
+AddRelTag("message", $lineStyle = DashedLine())
+
+Person(customer, "Customer", "Владелец умного дома")
+System_Boundary(c1, "Warm House System") {
+    Container(web, "Web Application", "Веб приложение 'Теплый дом'")
+    Container(mobile, "Mobile Application", "Мобильное приложение 'Теплый дом'")
+    Container(controller, "Device controller", "Хранение данных устройств")
+    Container(dashboard, "Dashboard", "Просмотр данных телеметрии")
+    Container(telemetry, "Telemetry", "Сбор телеметрии")
+
+    ContainerDb(twdb, "Telemetry database master", "Хранение данных телеметрии")
+    ContainerDb(trdb, "Telemetry database salve", "Хранение данных телеметрии")
+    ContainerDb(ddb, "Device database", "Хранение данных устройств")
+}
+System_Ext(device, "Smart device", "Устройство из умного дома пользователя")
+
+Rel(customer, web, "Подключение и настройка устройств, просмотр телеметрии в браузере")
+Rel(customer, mobile, "Подключение и настройка устройств, просмотр телеметрии на мобильном устройстве")
+
+
+Rel(web, dashboard, "Делает вызовы API", "JSON/HTTPS")
+Rel(mobile, controller, "Делает вызовы API", "JSON/HTTPS")
+Rel(web, controller, "Делает вызовы API", "JSON/HTTPS")
+Rel(mobile, dashboard, "Делает вызовы API", "JSON/HTTPS")
+Rel(controller, ddb, "Пишет/читает данные", "SQL/TCP")
+Rel(telemetry, twdb, "Пишет данные", "SQL/TCP")
+Rel(twdb, trdb, "Репликация", "WAL")
+Rel(dashboard, trdb, "Читает данные", "SQL/TCP")
+
+
+BiRel(controller, device, "Управление", "Kafka/TCP", $tags="message")
+Rel(device, telemetry, "Телеметрия", "Kafka/TCP", $tags="message")
+
+@enduml

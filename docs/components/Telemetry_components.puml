@@ -1,0 +1,18 @@
+@startuml
+!include <C4/C4_Container>
+AddRelTag("message", $lineStyle = DashedLine())
+
+System_Ext(device, "Smart device", "Мобильное приложение 'Теплый дом'")
+Container(broker, "Message broker", "Брокер сообщений")
+Container_Boundary(c1, "Telemetry") {
+    Container(telemetryConsumer, "Telemetry consumer", "Вычитывает данные телеметрии")
+    Container(telemetryComponent, "Telemetry component", "Предоставляет функциональность для преобразования и сохранения дынных телеметрии")
+}
+ContainerDb(db, "Telemetry database", "Хранение данных телеметрии")
+
+Rel(device, broker, "Отправляет данные телеметрии", "Json", $tags="message")
+Rel(broker, telemetryConsumer, "Читает данные телеметрии","Json", $tags="message")
+Rel(telemetryConsumer, telemetryComponent, "Uses")
+Rel(telemetryComponent, db, "Write data", "SQL/TCP")
+
+@enduml

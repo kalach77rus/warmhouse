@@ -1,0 +1,21 @@
+@startuml
+!include <C4/C4_Container>
+
+AddRelTag("message", $lineStyle = DashedLine())
+
+Container(web, "Web Application", "Веб приложение 'Теплый дом'")
+Container(mobile, "Mobile Application", "Мобильное приложение 'Теплый дом'")
+Container_Boundary(c1, "Dashboard") {
+    Container(telemetryController, "Telemetry controller", "Позволяет пользователем получать данные телеметрии")
+    Container(telemetryComponent, "Telemetry component", "Предоставляет функциональность для получения данных телеметрии")
+}
+ContainerDb(db, "Telemetry database", "Хранение данных телеметрии")
+
+Rel(web, telemetryController, "Делает вызовы API", "JSON/HTTPS")
+Rel(mobile, telemetryController, "Делает вызовы API", "JSON/HTTPS")
+Rel(telemetryController, mobile, "Отправляет данные", "JSON/WebSocket", $tags="message")
+Rel(telemetryController, web, "Отправляет данные", "JSON/WebSocket", $tags="message")
+Rel(telemetryController, telemetryComponent, "Uses")
+Rel(telemetryComponent, db, "Fetch data", "SQL/TCP")
+
+@enduml

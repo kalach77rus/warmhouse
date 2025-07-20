@@ -1,0 +1,122 @@
+asyncapi: '2.6.0'
+info:
+  title: Streetlights Kafka API
+  version: '1.0.0'
+  description: The Smartylighting Streetlights API allows you to remotely manage the city lights.
+
+servers:
+  scram-connections:
+    protocol: kafka-secure
+    security:
+      - saslScram: []
+    tags:
+      - name: "env:test-scram"
+        description: "This environment is meant for running internal tests through scramSha256"
+
+defaultContentType: application/json
+
+channels:
+   device.command.{deviceId}:
+     description: The topic for commands to device
+     parameters:
+       device:
+         $ref: '#/components/parameters/deviceId'
+     publish:
+       summary: Inform about environmental lighting conditions of a particular streetlight.
+       operationId: receiveLightMeasurement
+       traits:
+         - $ref: '#/components/deviceTraits/kafka'
+       message:
+         $ref: '#/components/messages/Command'
+
+   device.answers.{deviceId}:
+     description: Answers from device with command results
+     parameters:
+       streetlightId:
+         $ref: '#/components/parameters/deviceId'
+     subscribe:
+       operationId: turnOn
+       traits:
+        - $ref: '#/components/deviceControllerTraits/kafka'
+       message:
+         $ref: '#/components/messages/Answer'
+
+   device.measurements.{deviceId}:
+     parameters:
+       streetlightId:
+         $ref: '#/components/telemetryTraits/deviceId'
+     subscribe:
+       operationId: turnOff
+       traits:
+         - $ref: '#/components/telemetryTraits/kafka'
+       message:
+         $ref: '#/components/messages/turnOnOff'
+
+components:
+  schemas:
+    Command:
+      type: object
+      properties:
+        id:
+          description: The id of the command
+          type: string
+        cmd:
+          description: The name of the command
+          type: string
+        info:
+          description: Json with additional information
+          type: string
+    Answer:
+      type: object
+      properties:
+        id: The id of the command
+        status:
+          type: string
+          enum:
+            - completed
+            - processing
+            - error
+          description: status.
+        description:
+          type: string
+    Measurement:
+      type: object
+      properties:
+        time:
+          type: string
+          format: 'data-time'
+          description: The time of measurement
+        value:
+          type: number
+          format: double
+
+  parameters:
+    deviceId:
+      description: The id for the device
+      schema:
+        type: string
+        format: uuid
+
+  telemetryTraits:
+    kafka:
+      bindings:
+        kafka:
+          clientId:
+            type: string
+            enum: ['telemetry-id']
+
+  deviceControllerTraits:
+    kafka:
+      bindings:
+        kafka:
+          clientId:
+            type: string
+            enum: ['device-controller-id']
+
+  deviceTraits:
+    kafka:
+      bindings:
+        kafka:
+          clientId:
+            type: string
+            enum: [ 'device-id' ]

@@ -1,0 +1,37 @@
+@startuml
+!include <C4/C4_Container>
+
+AddRelTag("message", $lineStyle = DashedLine())
+
+Container(web, "Web Application", "Веб приложение 'Теплый дом'")
+Container(mobile, "Mobile Application", "Мобильное приложение 'Теплый дом'")
+Container_Boundary(c1, "Dashboard") {
+    Container(userController, "User controller", "Предоставляет пользователю возможности управлению профилем")
+    Container(userComponent, "User component", "Предоставляет функциональность для управления профилем")
+
+    Container(deviceController, "Device controller", "Позволяет пользователю зарегистрировать и настроить устройство умного дома")
+    Container(deviceComponent, "Device component", "Предоставляет функциональность по регистрации и настройке устройств")
+
+    Container(commandController, "Command controller", "Позволяет пользователем отправлять команды на устройства")
+    Container(commandComponent, "Command component", "Предоставляет функциональность для отправки команд на устройства")
+}
+ContainerDb(db, "Telemetry database", "Хранение данных телеметрии")
+Container_Ext(Device, "Device", "Устройство умного дома")
+
+Rel(web, userController, "Делает вызовы API", "JSON/HTTPS")
+Rel(mobile, userController, "Делает вызовы API", "JSON/HTTPS")
+Rel(web, deviceController, "Делает вызовы API", "JSON/HTTPS")
+Rel(mobile, deviceController, "Делает вызовы API", "JSON/HTTPS")
+Rel(web, commandController, "Делает вызовы API", "JSON/HTTPS")
+Rel(mobile, commandController, "Делает вызовы API", "JSON/HTTPS")
+Rel(deviceController, userComponent, "Uses")
+Rel(userController, userComponent, "Uses")
+Rel(userComponent, db, "Read/Write data", "SQL/TCP")
+Rel(deviceController, deviceComponent, "Uses")
+Rel(deviceComponent, db, "Read/Write data", "SQL/TCP")
+Rel(commandController, deviceComponent, "Uses")
+Rel(commandController, commandComponent, "Uses")
+Rel(commandComponent, db, "Read/Write data", "SQL/TCP")
+BiRel(commandComponent, Device, "Send and receive messages", "Message", $tags="message")
+
+@enduml
