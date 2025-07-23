@@ -7,4 +7,4 @@ COPY ./temperature-api.py ./
 
 EXPOSE 8081
 
-CMD ["python", "./temperature-api.py"]
+CMD ["python", "-u", "./temperature-api.py"]

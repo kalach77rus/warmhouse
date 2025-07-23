@@ -7,8 +7,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - 5432:5432
     healthcheck:
       test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
       interval: 10s
@@ -26,8 +24,57 @@ services:
     container_name: temperature-api
     networks:
       - smarthome-network
-    ports:
-      - 8081:8081
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - smarthome-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.4
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+       test: nc -z localhost 9092 || exit -1
+       start_period: 15s
+       interval: 5s
+       timeout: 10s
+       retries: 10
+    networks:
+      - smarthome-network
+
+  telemetry:
+    build:
+      context: ./telemetry
+      dockerfile: Dockerfile
+    container_name: smarthome-telemetry
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - smarthome-network
+
+  hub:
+    build:
+      context: ./hub
+      dockerfile: Dockerfile
+    container_name: smarthome-hub
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - smarthome-network
+
   app:
     build:
       context: ./smart_home
