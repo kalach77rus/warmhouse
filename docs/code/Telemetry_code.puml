@@ -1,0 +1,14 @@
+@startuml
+title Telemetry Code Diagram
+
+top to bottom direction
+
+class Message {
+  +String key
+  +String body
+  +void read()
+  +void process()
+  +void save()
+}
+
+@enduml

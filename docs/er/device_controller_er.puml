@@ -1,0 +1,31 @@
+@startuml
+
+entity Profile {
+   * id
+   * username
+   * first_name
+   * last_name
+   * email
+   * phone
+}
+entity Device {
+  * id
+  * profile_id
+  * device_name
+  * device_description
+  * status
+  * space_id
+  * type
+}
+entity Space {
+  * id
+  * name
+  * description
+  * parent_space_id
+}
+
+Device }o--|| Profile
+Device }o--|| Space
+Space |o--o| Space
+
+@enduml
