@@ -1,0 +1,27 @@
+@startuml Warm_House_Heating_Component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' Gate Service internals
+Container_Boundary(ls, "Gate Service") {
+    Component(sensorListener, "Gate Sensor Listener", "Go", "Receives updates from sensors")
+    Component(scheduleManager, "Schedule Manager", "Go", "Handles user-defined schedules")
+    Component(ruleEvaluator, "Rule Evaluator", "Go", "Applies logic to decide state")
+    Component(gateController, "Gate Controller", "Go", "Sends ON/OFF commands to devices")
+    Component(apiInterface, "API Interface", "Go", "Exposes REST APIs to mobile/web apps")
+}
+
+ContainerDb(gateDb, "gate DB", "PostgreSQL", "Stores schedules, gate logs, and system states")
+Container(deviceService, "Device Management Service", "Go + MQTT", "Registers and controls smart devices")
+Container(graphql, "GraphQL Federation", "API requests")
+
+Rel(apiInterface, scheduleManager, "Manages schedules", "REST/internal")
+Rel(sensorListener, ruleEvaluator, "Sends light readings", "Internal event")
+Rel(scheduleManager, ruleEvaluator, "Provides schedule constraints", "Internal")
+Rel(ruleEvaluator, gateController, "Triggers heating state", "Internal call")
+Rel(gateController, deviceService, "Sends commands", "MQTT")
+Rel(apiInterface, gateDb, "Stores/retrieves user settings", "SQL")
+Rel(ruleEvaluator, gateDb, "Logs actions", "SQL")
+
+Rel_U(graphql, apiInterface, "Views & sets gate schedules", "HTTPS/JSON")
+
+@enduml

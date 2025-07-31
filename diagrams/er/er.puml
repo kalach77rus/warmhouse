@@ -1,0 +1,77 @@
+@startuml Warm_House_ER_Diagram
+
+entity User {
+  id: Integer
+  name: String
+  email: String
+  passwordHash: String
+  role: String
+}
+
+entity Device {
+  id: Integer
+  name: String
+  type: Enum
+  location: String
+  firmwareVersion: String
+  houseId: Integer
+}
+
+entity DeviceStatus {
+  id: Integer
+  deviceId: Integer
+  status: String
+  recordedAt: DateTime
+}
+
+entity DeviceCommand {
+  id: Integer
+  deviceId: Integer
+  commandType: Enum
+  payload: Binary
+  issuedAt: DateTime
+}
+
+enum DeviceCommandType{
+    id: Integer
+    name: String
+}
+
+enum DeviceType {
+    id: Integer
+    name: String
+}
+
+entity House {
+  id: Integer
+  address: String
+  userId: Integer
+}
+
+entity Schedule {
+  id: Integer
+  deviceId: Integer
+  startTime: DateTime
+  endTime: DateTime
+  action: String
+  repeat: Boolean
+}
+
+entity TelemetryData{
+    id: UUID
+    deviceId: Integer
+    recordedAt: DateTime
+    payload: Json
+}
+
+' Relationships
+User ||--o{ House
+House ||--o{ Device
+Device ||--|| DeviceStatus
+Device ||--|| DeviceType
+Device ||--o{ DeviceCommand
+Device ||--o{ TelemetryData
+Device ||--|| Schedule
+DeviceCommand ||--|| DeviceCommandType
+
+@enduml

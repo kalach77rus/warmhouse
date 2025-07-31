@@ -1,0 +1,45 @@
+@startuml C4_Container_Diagram
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(customer, "Customer", "A customer using the system")
+
+System_Boundary(s1, "Warm House System") {
+    Container(webApp, "Web Application", "Java + Spring Boot", "Allows users to browse and purchase products")
+    Container(mobileApp, "Mobile App", "Flutter", "Allows users to browse and purchase products on mobile devices")
+    Container(graphql, "GraphQL Federation", "API requests")
+    Container(authService, "Authentication Service", "Keycloak", "Manages user identity and access")
+    Container(deviceService, "Device Management Service", "Go + MQTT", "Registers and controls smart devices")
+    Container(heating, "Heating Service", "Go", "Handles business logic and API requests")
+    Container(light, "Lights Service", "Go", "Handles business logic and API requests")
+    Container(gate, "Gates Service", "Go", "Handles business logic and API requests")
+    Container(camera, "Cameras Service", "Go", "Handles business logic and API requests")
+    ContainerDb(database, "Database", "PostgreSQL", "Stores measurement, user, sensors and houses information")
+}
+
+System_Ext(sensors, "Sensors In House", "The sensors and smart devices were installed in a house")
+
+Rel(customer, webApp, "Uses", "HTTPS")
+Rel(customer, mobileApp, "Uses", "HTTPS")
+
+Rel(webApp, graphql, "API calls", "HTTPS")
+Rel(mobileApp, graphql, "API calls", "HTTPS")
+Rel(deviceService, graphql, "API calls", "HTTPS")
+
+Rel(graphql, heating, "REST API calls", "HTTPS")
+Rel(graphql, light, "REST API calls", "HTTPS")
+Rel(graphql, gate, "REST API calls", "HTTPS")
+Rel(graphql, camera, "REST API calls", "HTTPS")
+
+Rel(sensors, deviceService, "REST API calls", "HTTPS")
+Rel(deviceService, database, "Writes measures from devices directly to DB", "JDBC/SQL")
+
+Rel(heating, database, "Reads from and writes to", "JDBC/SQL")
+Rel(light, database, "Reads from and writes to", "JDBC/SQL")
+Rel(gate, database, "Reads from and writes to", "JDBC/SQL")
+Rel(camera, database, "Reads from and writes to", "JDBC/SQL")
+
+
+Rel(mobileApp, authService, "Authenticates via", "OAuth2")
+Rel(webApp, authService, "Authenticates via", "OAuth2")
+
+@enduml

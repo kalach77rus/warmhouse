@@ -1,0 +1,12 @@
+@startuml C4_Context_Diagram
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(customer, "Customer", "A customer using the system")
+System(system, "Warm House System", "Allows customers to manage their houses")
+
+System_Ext(sensors, "Sensors In House", "The sensors and smart devices were installed in a house")
+
+Rel(customer, system, "Uses", "HTTPS")
+Rel(system, sensors, "Uses", "HTTPS")
+
+@enduml

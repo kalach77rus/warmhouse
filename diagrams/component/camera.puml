@@ -1,0 +1,27 @@
+@startuml Warm_House_Camera_Component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' camera Service internals
+Container_Boundary(hs, "camera Service") {
+    Component(sensorListener, "Gate Sensor Listener", "Go", "Receives gate updates from sensors")
+    Component(scheduleManager, "Schedule Manager", "Go", "Handles user-defined camera schedules")
+    Component(ruleEvaluator, "Rule Evaluator", "Go", "Applies logic to decide camera state")
+    Component(gateController, "Gate Controller", "Go", "Sends ON/OFF commands to gate devices")
+    Component(apiInterface, "API Interface", "Go", "Exposes REST APIs to mobile/web apps")
+}
+
+ContainerDb(cameraDb, "camera DB", "PostgreSQL", "Stores schedules, gate logs, and system states")
+Container(deviceService, "Device Management Service", "Go + MQTT", "Registers and controls smart devices")
+Container(graphql, "GraphQL Federation", "API requests")
+
+Rel(apiInterface, scheduleManager, "Manages schedules", "REST/internal")
+Rel(sensorListener, ruleEvaluator, "Sends gate readings", "Internal event")
+Rel(scheduleManager, ruleEvaluator, "Provides schedule constraints", "Internal")
+Rel(ruleEvaluator, gateController, "Triggers camera state", "Internal call")
+Rel(gateController, deviceService, "Sends commands", "MQTT")
+Rel(apiInterface, cameraDb, "Stores/retrieves user settings", "SQL")
+Rel(ruleEvaluator, cameraDb, "Logs gate and actions", "SQL")
+
+Rel_U(graphql, apiInterface, "Views & sets camera schedules", "HTTPS/JSON")
+
+@enduml

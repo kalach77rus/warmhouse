@@ -1,0 +1,23 @@
+@startuml Warm_House_Device_Management_Component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(dm, "Device Management Service") {
+    Component(apiController, "API Controller", "GO", "Exposes REST endpoints to other services and apps")
+    Component(mqttBroker, "MQTT Broker", "Eclipse Mosquitto", "Handles real-time communication with smart devices")
+    Component(deviceRegistry, "Device Registry Component", "Go", "Manages device registration and metadata")
+    Component(commandDispatcher, "Command Dispatcher", "Go", "Sends control commands to devices")
+    Component(telemetryHandler, "Telemetry Handler", "Go", "Processes incoming data from devices")
+}
+
+ContainerDb(deviceDb, "Device Registry", "PostgreSQL", "Stores metadata and state for all devices")
+System_Ext(sensors, "Sensors In House", "The sensors and smart devices were installed in a house")
+
+Rel(apiController, deviceRegistry, "Registers devices", "gRPC")
+Rel(apiController, commandDispatcher, "Sends control commands", "gRPC")
+Rel(mqttBroker, telemetryHandler, "Delivers device telemetry", "MQTT")
+Rel(commandDispatcher, mqttBroker, "Publishes control commands", "MQTT")
+Rel(telemetryHandler, deviceRegistry, "Updates device status", "gRPC")
+Rel(deviceRegistry, deviceDb, "Reads/writes device data", "SQL")
+Rel_U("sensors", mqttBroker, "Communicate via", "MQTT")
+
+@enduml

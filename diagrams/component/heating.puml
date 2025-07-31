@@ -1,0 +1,27 @@
+@startuml Warm_House_Heating_Component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' Heating Service internals
+Container_Boundary(hs, "Heating Service") {
+    Component(sensorListener, "Temperature Sensor Listener", "Go", "Receives temperature updates from sensors")
+    Component(scheduleManager, "Schedule Manager", "Go", "Handles user-defined heating schedules")
+    Component(ruleEvaluator, "Rule Evaluator", "Go", "Applies logic to decide heating state")
+    Component(heaterController, "Heater Controller", "Go", "Sends ON/OFF commands to heater devices")
+    Component(apiInterface, "API Interface", "Go", "Exposes REST APIs to mobile/web apps")
+}
+
+ContainerDb(heatingDb, "Heating DB", "PostgreSQL", "Stores schedules, temperature logs, and system states")
+Container(deviceService, "Device Management Service", "Go + MQTT", "Registers and controls smart devices")
+Container(graphql, "GraphQL Federation", "API requests")
+
+Rel(apiInterface, scheduleManager, "Manages schedules", "REST/internal")
+Rel(sensorListener, ruleEvaluator, "Sends temperature readings", "Internal event")
+Rel(scheduleManager, ruleEvaluator, "Provides schedule constraints", "Internal")
+Rel(ruleEvaluator, heaterController, "Triggers heating state", "Internal call")
+Rel(heaterController, deviceService, "Sends commands", "MQTT")
+Rel(apiInterface, heatingDb, "Stores/retrieves user settings", "SQL")
+Rel(ruleEvaluator, heatingDb, "Logs temperature and actions", "SQL")
+
+Rel_U(graphql, apiInterface, "Views & sets heating schedules", "HTTPS/JSON")
+
+@enduml

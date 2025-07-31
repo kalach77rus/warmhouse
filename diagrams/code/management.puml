@@ -1,0 +1,75 @@
+@startuml Warm_House_Device_Management_ClassDiagram
+skinparam classAttributeIconSize 0
+
+' Domain classes
+class Device {
+  - id: UUID
+  - name: String
+  - type: DeviceType
+  - location: String
+  - status: DeviceStatus
+  - firmwareVersion: String
+  - lastSeen: DateTime
+  + updateStatus(status: DeviceStatus): void
+}
+
+enum DeviceType {
+  HEATER
+  THERMOSTAT
+  MOTION_SENSOR
+  TEMPERATURE_SENSOR
+  HUMIDITY_SENSOR
+  LIGHT_SWITCH
+  ...
+}
+
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  ERROR
+  UPDATING
+}
+
+class DeviceRegistry {
+  + registerDevice(device: Device): void
+  + updateDevice(device: Device): void
+  + getDeviceById(id: UUID): Device
+  + listDevices(): List<Device>
+}
+
+class CommandDispatcher {
+  + sendCommand(deviceId: UUID, command: DeviceCommand): void
+}
+
+class DeviceCommand {
+  - commandType: String
+  - payload: Map<String, String>
+  + execute(): void
+}
+
+class StatusMonitor {
+  + pollStatus(device: Device): DeviceStatus
+  + handleStatusUpdate(deviceId: UUID, status: DeviceStatus): void
+}
+
+class EventBroker {
+  + publish(event: DeviceEvent): void
+  + subscribe(eventType: String): void
+}
+
+class DeviceEvent {
+  - type: String
+  - timestamp: DateTime
+  - deviceId: UUID
+  - data: Map<String, String>
+}
+
+' Relationships
+DeviceRegistry --> Device
+CommandDispatcher --> DeviceCommand
+StatusMonitor --> Device
+Device --> DeviceType
+Device --> DeviceStatus
+EventBroker --> DeviceEvent
+
+@enduml

@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: Warm House - Device Management API
+  description: REST API for registering and controlling smart devices
+  version: 1.0.0
+
+tags:
+  - name: Devices
+    description: Manage smart devices
+  - name: Commands
+    description: Send control instructions to devices
+
+paths:
+  /devices:
+    get:
+      tags: [Devices]
+      summary: List all registered devices
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+
+    post:
+      tags: [Devices]
+      summary: Register a new device
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceRegistrationRequest'
+      responses:
+        '201':
+          description: Device successfully registered
+
+  /devices/{deviceId}:
+    get:
+      tags: [Devices]
+      summary: Get details of a device
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Device details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+
+    patch:
+      tags: [Devices]
+      summary: Update a device's metadata
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceUpdateRequest'
+      responses:
+        '200':
+          description: Device updated
+
+  /devices/{deviceId}/commands:
+    post:
+      tags: [Commands]
+      summary: Send a command to a device
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommandRequest'
+      responses:
+        '202':
+          description: Command accepted
+
+components:
+  schemas:
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+        type:
+          type: string
+          enum: [THERMOSTAT, HEATER, SENSOR, LIGHT, SWITCH]
+        location:
+          type: string
+        status:
+          type: string
+          enum: [ONLINE, OFFLINE, ERROR]
+        lastSeen:
+          type: string
+          format: date-time
+
+    DeviceRegistrationRequest:
+      type: object
+      required: [name, type, location]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        location:
+          type: string
+
+    DeviceUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+
+    CommandRequest:
+      type: object
+      required: [commandType]
+      properties:
+        commandType:
+          type: string
+          example: "TURN_ON"
+        parameters:
+          type: object
+          additionalProperties:
+            type: string

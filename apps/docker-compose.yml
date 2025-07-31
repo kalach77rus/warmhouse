@@ -4,10 +4,31 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: smarthome-postgres
-  ## тут нужно добавить настройки
+    hostname: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: smarthome
+    volumes:
+      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - smarthome-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   temperature-api:
-  ## тут нужно добавить приложение
+      build:
+        context: ./temperature_app
+        dockerfile: Dockerfile
+      ports:
+        - "8081:8081"
+      restart: unless-stopped
+      networks:
+        - smarthome-network
 
   app:
     build:
@@ -25,6 +46,43 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    networks:
+      - smarthome-network
+
+  telemetry:
+    build: ./telemetry_app
+    container_name: telemetry_app
+    hostname: telemetry
+    volumes:
+      - ./telemetry_app/src:/var/www/html
+    ports:
+      - "8082:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      DB_HOST: postgres
+      DB_NAME: smarthome
+      DB_USER: postgres
+      DB_PASS: postgres
+    networks:
+      - smarthome-network
+
+  gate:
+    build: ./gate_app
+    container_name: gate_app
+    hostname: gate
+    environment:
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: smarthome
+    ports:
+      - "4000:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - smarthome-network
 

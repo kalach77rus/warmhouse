@@ -1,0 +1,27 @@
+@startuml Warm_House_Heating_Component
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' Light Service internals
+Container_Boundary(ls, "Light Service") {
+    Component(sensorListener, "Light Sensor Listener", "Go", "Receives temperature updates from sensors")
+    Component(scheduleManager, "Schedule Manager", "Go", "Handles user-defined light schedules")
+    Component(ruleEvaluator, "Rule Evaluator", "Go", "Applies logic to decide light state")
+    Component(lightController, "Light Controller", "Go", "Sends ON/OFF commands to devices")
+    Component(apiInterface, "API Interface", "Go", "Exposes REST APIs to mobile/web apps")
+}
+
+ContainerDb(lightDb, "Light DB", "PostgreSQL", "Stores schedules, light logs, and system states")
+Container(deviceService, "Device Management Service", "Go + MQTT", "Registers and controls smart devices")
+Container(graphql, "GraphQL Federation", "API requests")
+
+Rel(apiInterface, scheduleManager, "Manages schedules", "REST/internal")
+Rel(sensorListener, ruleEvaluator, "Sends temperature readings", "Internal event")
+Rel(scheduleManager, ruleEvaluator, "Provides schedule constraints", "Internal")
+Rel(ruleEvaluator, lightController, "Triggers heating state", "Internal call")
+Rel(lightController, deviceService, "Sends commands", "MQTT")
+Rel(apiInterface, lightDb, "Stores/retrieves user settings", "SQL")
+Rel(ruleEvaluator, lightDb, "Logs actions", "SQL")
+
+Rel_U(graphql, apiInterface, "Views & sets light schedules", "HTTPS/JSON")
+
+@enduml

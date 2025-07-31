@@ -21,3 +21,20 @@ CREATE TABLE IF NOT EXISTS sensors (
 CREATE INDEX IF NOT EXISTS idx_sensors_type ON sensors(type);
 CREATE INDEX IF NOT EXISTS idx_sensors_location ON sensors(location);
 CREATE INDEX IF NOT EXISTS idx_sensors_status ON sensors(status);
+
+-- Table for storing telemetry data
+CREATE TABLE telemetry (
+    id SERIAL PRIMARY KEY,
+    device_id VARCHAR(50),
+    temperature NUMERIC,
+    humidity NUMERIC,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for gate log
+CREATE TABLE gate_log (
+    id SERIAL PRIMARY KEY,
+    action VARCHAR(20),
+    user_id VARCHAR(50),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
