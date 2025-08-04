@@ -65,10 +65,22 @@
 - **Тестирование**: Сложность изолированного тестирования компонентов
 
 ### 5. Визуализация контекста системы — диаграмма С4
+Установка plantuml.jar
+```bash
+curl -L https://sourceforge.net/projects/plantuml/files/plantuml.jar/download -o plantuml.jar
+````
 
 [Диаграмма контекста системы](diagrams/context/Context%20Diagram.png)
 
+```bash
+java -Dfile.encoding=UTF-8 -jar plantuml.jar diagrams/context/context-diagram.puml
+````
+
 [Диаграмма контейнеров](diagrams/container/Container%20Diagram.png)
+
+```bash
+java -Dfile.encoding=UTF-8 -jar plantuml.jar diagrams/container/container-diagram.puml
+````
 
 # Задание 2. Проектирование микросервисной архитектуры
 
