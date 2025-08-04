@@ -14,30 +14,75 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # Обновлена версия
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4  # Обновлена версия
         with:
-          java-version: '17'
+          java-version: '17'  # Java 11 устарела
           distribution: 'temurin'
 
       - name: Install PlantUML
-        run: sudo apt-get install plantuml
+        run: |
+          # Используем последнюю версию PlantUML
+          wget https://github.com/plantuml/plantuml/releases/latest/download/plantuml-1.2024.6.jar -O plantuml.jar
+          # Альтернативно можно использовать apt:
+          # sudo apt-get update && sudo apt-get install -y plantuml
+
+      - name: Check if diagram directories exist
+        run: |
+          echo "Checking diagram directories..."
+          ls -la diagrams/ || echo "diagrams directory not found"
+          find diagrams/ -name "*.puml" -type f || echo "No .puml files found"
 
       - name: Generate Diagrams
         run: |
-          plantuml diagrams/context/*.puml
-          plantuml diagrams/container/*.puml
+          # Создаем выходные директории если их нет
+          mkdir -p diagrams/context diagrams/container
+          
+          # Генерируем диаграммы с использованием jar файла
+          if [ -f plantuml.jar ]; then
+            find diagrams/ -name "*.puml" -exec java -jar plantuml.jar {} \;
+          else
+            # Fallback на системный plantuml
+            find diagrams/ -name "*.puml" -exec plantuml {} \;
+          fi
+          
+          # Показываем сгенерированные файлы
+          echo "Generated files:"
+          find diagrams/ -name "*.png" -o -name "*.svg"
 
-      - name: Commit Diagrams
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and Push Diagrams
+        if: steps.verify-changed-files.outputs.changed == 'true' && github.event_name == 'push'
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-           git add diagrams/**/*.png
-          git commit -m "Automated diagram generation"
-          git push origin warmhouse
           
-          echo "✅ Automated diagram generation"
+          # Добавляем только сгенерированные изображения
+          git add diagrams/**/*.png diagrams/**/*.svg
+          
+          # Проверяем есть ли что коммитить
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          
+          git commit -m "🤖 Automated diagram generation [skip ci]"
+          git push origin main
 
-        if: success()
+      - name: Upload artifacts (для отладки)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-diagrams
+          path: diagrams/**/*.png
+          retention-days: 5
