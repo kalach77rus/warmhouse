@@ -66,9 +66,9 @@
 
 ### 5. Визуализация контекста системы — диаграмма С4
 
-[Диаграмма контекста системы](diagrams/context/context-diagram.puml)
+[Диаграмма контекста системы](diagrams/context/Context%20Diagram.png)
 
-[Диаграмма контейнеров](diagrams/container/container-diagram.puml)
+[Диаграмма контейнеров](diagrams/container/Container%20Diagram.png)
 
 # Задание 2. Проектирование микросервисной архитектуры
 
