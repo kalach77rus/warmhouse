@@ -11,24 +11,25 @@ on:
 jobs:
   generate-diagrams:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Необходимо для push в репозиторий
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4  # Обновлена версия
+        uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v4  # Обновлена версия
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'  # Java 11 устарела
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Install PlantUML
         run: |
-          # Обновляем список пакетов и устанавливаем PlantUML
-          sudo apt-get update
-          sudo apt-get install -y plantuml
+          # Скачиваем последнюю версию PlantUML
+          wget -O plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
           # Проверяем установку
-          plantuml -version
+          java -jar plantuml.jar -version
 
       - name: Check if diagram directories exist
         run: |
@@ -41,12 +42,24 @@ jobs:
           # Создаем выходные директории если их нет
           mkdir -p diagrams/context diagrams/container
           
-          # Генерируем диаграммы используя системный plantuml
-          find diagrams/ -name "*.puml" -exec plantuml {} \;
+          # Генерируем диаграммы с UTF-8 кодировкой
+          echo "Generating diagrams..."
+          
+          # Проверяем и генерируем context диаграмму
+          if [ -f "diagrams/context/context-diagram.puml" ]; then
+            echo "Generating context diagram..."
+            java -Dfile.encoding=UTF-8 -jar plantuml.jar diagrams/context/context-diagram.puml
+          else
+            echo "Context diagram not found: diagrams/context/context-diagram.puml"
+          fi
+          
+          # Генерируем все остальные .puml файлы
+          echo "Generating other diagrams..."
+          find diagrams/ -name "*.puml" -not -path "diagrams/context/context-diagram.puml" -exec java -Dfile.encoding=UTF-8 -jar plantuml.jar {} \;
           
           # Показываем сгенерированные файлы
           echo "Generated files:"
-          find diagrams/ -name "*.png" -o -name "*.svg"
+          find diagrams/ -name "*.png" -o -name "*.svg" || echo "No output files generated"
 
       - name: Check for changes
         id: verify-changed-files
@@ -64,7 +77,6 @@ jobs:
           git config --local user.name "github-actions[bot]"
           
           # Добавляем только существующие файлы изображений
-          # Используем glob pattern который не падает если файлы не найдены
           git add diagrams/ || true
           
           # Проверяем есть ли что коммитить
