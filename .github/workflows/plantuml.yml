@@ -14,12 +14,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v2
+        uses: ctions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '17'
+          distribution: 'temurin'
 
       - name: Install PlantUML
         run: sudo apt-get install plantuml
