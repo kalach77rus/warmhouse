@@ -24,10 +24,11 @@ jobs:
 
       - name: Install PlantUML
         run: |
-          # Используем последнюю версию PlantUML
-          wget https://github.com/plantuml/plantuml/releases/latest/download/plantuml-1.2024.6.jar -O plantuml.jar
-          # Альтернативно можно использовать apt:
-          # sudo apt-get update && sudo apt-get install -y plantuml
+          # Обновляем список пакетов и устанавливаем PlantUML
+          sudo apt-get update
+          sudo apt-get install -y plantuml
+          # Проверяем установку
+          plantuml -version
 
       - name: Check if diagram directories exist
         run: |
@@ -40,13 +41,8 @@ jobs:
           # Создаем выходные директории если их нет
           mkdir -p diagrams/context diagrams/container
           
-          # Генерируем диаграммы с использованием jar файла
-          if [ -f plantuml.jar ]; then
-            find diagrams/ -name "*.puml" -exec java -jar plantuml.jar {} \;
-          else
-            # Fallback на системный plantuml
-            find diagrams/ -name "*.puml" -exec plantuml {} \;
-          fi
+          # Генерируем диаграммы используя системный plantuml
+          find diagrams/ -name "*.puml" -exec plantuml {} \;
           
           # Показываем сгенерированные файлы
           echo "Generated files:"
