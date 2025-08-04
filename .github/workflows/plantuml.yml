@@ -24,11 +24,19 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install PlantUML
+      - name: Install PlantUML and Graphviz
         run: |
+          # Устанавливаем Graphviz (необходим для PlantUML)
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+          
           # Скачиваем последнюю версию PlantUML
           wget -O plantuml.jar https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar
+          
           # Проверяем установку
+          echo "Graphviz version:"
+          dot -V
+          echo "PlantUML version:"
           java -jar plantuml.jar -version
 
       - name: Check if diagram directories exist
@@ -48,14 +56,23 @@ jobs:
           # Проверяем и генерируем context диаграмму
           if [ -f "diagrams/context/context-diagram.puml" ]; then
             echo "Generating context diagram..."
-            java -Dfile.encoding=UTF-8 -jar plantuml.jar diagrams/context/context-diagram.puml
+            java -Dfile.encoding=UTF-8 -jar plantuml.jar diagrams/context/context-diagram.puml || {
+              echo "Error generating context diagram, trying with -tpng flag"
+              java -Dfile.encoding=UTF-8 -jar plantuml.jar -tpng diagrams/context/context-diagram.puml
+            }
           else
             echo "Context diagram not found: diagrams/context/context-diagram.puml"
           fi
           
           # Генерируем все остальные .puml файлы
           echo "Generating other diagrams..."
-          find diagrams/ -name "*.puml" -not -path "diagrams/context/context-diagram.puml" -exec java -Dfile.encoding=UTF-8 -jar plantuml.jar {} \;
+          find diagrams/ -name "*.puml" -not -path "diagrams/context/context-diagram.puml" -exec sh -c '
+            echo "Processing: $1"
+            java -Dfile.encoding=UTF-8 -jar plantuml.jar "$1" || {
+              echo "Error with $1, trying with -tpng flag"
+              java -Dfile.encoding=UTF-8 -jar plantuml.jar -tpng "$1"
+            }
+          ' _ {} \;
           
           # Показываем сгенерированные файлы
           echo "Generated files:"
