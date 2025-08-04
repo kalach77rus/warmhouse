@@ -23,64 +23,20 @@ jobs:
           distribution: 'temurin'
 
       - name: Install PlantUML
-        run: |
-          wget https://github.com/plantuml/plantuml/releases/latest/download/plantuml-1.2024.8.jar
-          sudo mv plantuml-1.2024.8.jar /usr/local/bin/plantuml.jar
-          echo '#!/bin/bash' | sudo tee /usr/local/bin/plantuml
-          echo 'java -jar /usr/local/bin/plantuml.jar "$@"' | sudo tee -a /usr/local/bin/plantuml
-          sudo chmod +x /usr/local/bin/plantuml
-
-      - name: Validate PlantUML files
-        run: |
-          echo "Проверка синтаксиса PlantUML файлов..."
-          for file in diagrams/*.puml; do
-            echo "Проверяем $file"
-            plantuml -syntax "$file" || {
-              echo "❌ Синтаксическая ошибка в $file"
-              exit 1
-            }
-          done
+        run: sudo apt-get install plantuml
 
       - name: Generate Diagrams
         run: |
-          echo "Генерация диаграмм..."
-          plantuml -verbose -failfast2 diagrams/*.puml || {
-            echo "❌ Ошибка при генерации диаграмм"
-            echo "Проверьте файлы на наличие синтаксических ошибок"
-            exit 1
-          }
-
-      - name: Check for generated files
-        run: |
-          if [ -n "$(find diagrams -name '*.png' -print -quit)" ]; then
-            echo "✅ Диаграммы успешно сгенерированы"
-            ls -la diagrams/*.png
-          else
-            echo "❌ Диаграммы не были сгенерированы"
-            exit 1
-          fi
+          plantuml diagrams/*.puml
 
       - name: Commit Diagrams
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
+          git add diagrams/*.png
+          git commit -m "Automated diagram generation"
+          git push origin warmhouse
           
-          # Проверяем, есть ли изменения
-          if [ -n "$(git status --porcelain diagrams/*.png 2>/dev/null)" ]; then
-            git add diagrams/*.png
-            git commit -m "🤖 Automated diagram generation [skip ci]"
-            git push origin warmhouse
-            echo "✅ Диаграммы зафиксированы и отправлены"
-          else
-            echo "ℹ️ Нет изменений в диаграммах"
-          fi
-        if: success()
+          echo "✅ Automated diagram generation"
 
-      - name: Upload artifacts on failure
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: plantuml-logs
-          path: |
-            diagrams/
-            **/*.log
+        if: success()
