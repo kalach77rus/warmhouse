@@ -1,0 +1,23 @@
+@startuml Container Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма контейнеров системы "Умный дом"
+
+Person(user, "Пользователь", "Владелец умного дома")
+
+System_Boundary(smart_home_system, "Система умного дома") {
+    Container(web_app, "Web Application", "Go, Gin", "Предоставляет REST API для управления датчиками и получения данных о температуре")
+    Container(db, "Database", "PostgreSQL", "Хранит информацию о датчиках, их конфигурации и статусе")
+}
+
+System_Ext(temperature_api, "Temperature API", "Внешний сервис для получения данных о температуре")
+System_Ext(sensors, "Датчики температуры", "Физические датчики")
+
+Rel(user, web_app, "Использует", "HTTP REST API")
+Rel(web_app, db, "Читает и записывает данные", "SQL")
+Rel(web_app, temperature_api, "Получает данные о температуре", "HTTP API")
+Rel(sensors, temperature_api, "Отправляет данные", "HTTP/HTTPS")
+
+@enduml 

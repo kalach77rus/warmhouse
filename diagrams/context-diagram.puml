@@ -1,0 +1,22 @@
+@startuml Context Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Контекстная диаграмма системы "Умный дом"
+
+Person(user, "Пользователь", "Владелец умного дома, который управляет отоплением и мониторит температуру")
+
+System(smart_home_system, "Система умного дома", "Монолитное приложение на Go, предоставляющее API для управления датчиками и получения данных о температуре")
+
+System_Ext(temperature_api, "Temperature API", "Внешний сервис для получения данных о температуре с датчиков")
+
+System_Ext(sensors, "Датчики температуры", "Физические датчики температуры, установленные в доме")
+
+Rel(user, smart_home_system, "Управляет отоплением\nПросматривает температуру", "HTTP REST API")
+
+Rel(smart_home_system, temperature_api, "Получает данные о температуре", "HTTP API")
+
+Rel(sensors, temperature_api, "Отправляет данные\nо температуре", "HTTP/HTTPS")
+
+@enduml 
