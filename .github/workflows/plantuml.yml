@@ -74,7 +74,7 @@ jobs:
           fi
           
           git commit -m "🤖 Automated diagram generation [skip ci]"
-          git push origin main
+          git push origin warmhouse
 
       - name: Upload artifacts (для отладки)
         if: always()
