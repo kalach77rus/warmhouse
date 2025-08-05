@@ -1,23 +1,34 @@
-@startuml Container Diagram
+@startuml Microservices Container Diagram
 !include ../common/C4_Container.puml
 
 LAYOUT_WITH_LEGEND()
 
-title Диаграмма контейнеров системы "Умный дом"
+title Диаграмма контейнеров микросервисной архитектуры "Умный дом"
 
 Person(user, "Пользователь", "Владелец умного дома")
 
 System_Boundary(smart_home_system, "Система умного дома") {
-    Container(web_app, "Web Application", "Go, Gin", "Предоставляет REST API для управления датчиками и получения данных о температуре")
-    Container(db, "Database", "PostgreSQL", "Хранит информацию о датчиках, их конфигурации и статусе")
+    Container(web_app, "Smart Home API", "Java, Spring boot", "Основной API для управления системой умного дома")
+    Container(device_service, "Device Management Service", "Java, Spring boot", "Управление устройствами и их конфигурацией")
+    Container(telemetry_service, "Telemetry Service", "Java, Spring boot", "Сбор и обработка телеметрии")
+    Container(message_broker, "Message Broker", "RabbitMQ", "Асинхронное взаимодействие между сервисами")
+    Container(db, "Database", "PostgreSQL", "Хранит информацию о датчиках и устройствах")
+    Container(telemetry_db, "Telemetry Database", "MongoDB", "Хранит временные ряды телеметрии")
 }
 
 System_Ext(temperature_api, "Temperature API", "Внешний сервис для получения данных о температуре")
 System_Ext(sensors, "Датчики температуры", "Физические датчики")
+System_Ext(devices, "Устройства", "Физические устройства умного дома")
 
 Rel(user, web_app, "Использует", "HTTP REST API")
-Rel(web_app, db, "Читает и записывает данные", "SQL")
-Rel(web_app, temperature_api, "Получает данные о температуре", "HTTP API")
-Rel(sensors, temperature_api, "Отправляет данные", "HTTP/HTTPS")
+Rel(web_app, device_service, "Управляет устройствами", "HTTP REST API")
+Rel(device_service, db, "Управляет данными устройств", "SQL")
+Rel_R(devices, device_service, "Отправляет статус", "HTTP/HTTPS")
+Rel(web_app, telemetry_service, "Получает телеметрию", "HTTP REST API")
+Rel(telemetry_service, telemetry_db, "Сохраняет телеметрию", "MQL")
+Rel(telemetry_service, temperature_api, "Получает данные о температуре", "HTTP API")
+Rel_R(sensors, temperature_api, "Отправляет данные", "HTTP/HTTPS")
 
-@enduml 
+Rel(device_service, message_broker, "Публикует события устройств", "AMQP")
+Rel(telemetry_service, message_broker, "Публикует/подписывается на события", "AMQP")
+@enduml
