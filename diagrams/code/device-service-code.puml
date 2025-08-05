@@ -1,0 +1,258 @@
+@startuml Device Service Code Diagram
+title Device Management Service Code Diagram
+
+' Controller Layer
+class DeviceRestController {
+  +ResponseEntity<List<DeviceDTO>> getAllDevices()
+  +ResponseEntity<DeviceDTO> getDeviceById(Long id)
+  +ResponseEntity<DeviceDTO> createDevice(DeviceCreateRequest request)
+  +ResponseEntity<DeviceDTO> updateDevice(Long id, DeviceUpdateRequest request)
+  +ResponseEntity<Void> deleteDevice(Long id)
+}
+
+class DeviceCommandController {
+  +ResponseEntity<CommandResponse> sendCommand(Long deviceId, DeviceCommandRequest request)
+  +ResponseEntity<CommandStatus> getCommandStatus(String commandId)
+  +ResponseEntity<Void> cancelCommand(String commandId)
+}
+
+class DeviceStatusController {
+  +ResponseEntity<DeviceStatusDTO> getDeviceStatus(Long deviceId)
+  +ResponseEntity<List<DeviceStatusDTO>> getAllDevicesStatus()
+  +ResponseEntity<HealthStatus> getDeviceHealth(Long deviceId)
+}
+
+class DeviceConfigController {
+  +ResponseEntity<DeviceConfigDTO> getDeviceConfig(Long deviceId)
+  +ResponseEntity<DeviceConfigDTO> updateDeviceConfig(Long deviceId, DeviceConfigRequest request)
+  +ResponseEntity<Void> resetDeviceConfig(Long deviceId)
+}
+
+' Service Layer
+class DeviceServiceImpl {
+  -DeviceRepository deviceRepository
+  -DeviceMapper deviceMapper
+  -DeviceValidator deviceValidator
+  -DeviceEventPublisher deviceEventPublisher
+  +List<DeviceDTO> findAll()
+  +DeviceDTO findById(Long id)
+  +DeviceDTO create(DeviceCreateRequest request)
+  +DeviceDTO update(Long id, DeviceUpdateRequest request)
+  +void delete(Long id)
+  +void validateDevice(Device device)
+}
+
+class DeviceCommandService {
+  -DeviceCommandExecutor commandExecutor
+  -DeviceCommandValidator commandValidator
+  -DeviceCommandMapper commandMapper
+  +CommandResponse executeCommand(Long deviceId, DeviceCommandRequest request)
+  +CommandStatus getCommandStatus(String commandId)
+  +void cancelCommand(String commandId)
+  +CommandResponse retryCommand(String commandId)
+}
+
+class DeviceStatusService {
+  -DeviceStatusMonitor statusMonitor
+  -DeviceHealthChecker healthChecker
+  -DeviceAlertService alertService
+  +DeviceStatusDTO getDeviceStatus(Long deviceId)
+  +List<DeviceStatusDTO> getAllDevicesStatus()
+  +HealthStatus checkDeviceHealth(Long deviceId)
+  +void monitorDeviceStatus(Long deviceId)
+}
+
+class DeviceConfigService {
+  -DeviceConfigRepository configRepository
+  -DeviceConfigValidator configValidator
+  +DeviceConfigDTO getDeviceConfig(Long deviceId)
+  +DeviceConfigDTO updateDeviceConfig(Long deviceId, DeviceConfigRequest request)
+  +void resetDeviceConfig(Long deviceId)
+  +void validateConfig(DeviceConfig config)
+}
+
+' Repository Layer
+class DeviceRepository {
+  +List<Device> findAll()
+  +Optional<Device> findById(Long id)
+  +Device save(Device device)
+  +void deleteById(Long id)
+  +List<Device> findByStatus(DeviceStatus status)
+  +List<Device> findByType(DeviceType type)
+}
+
+class DeviceConfigRepository {
+  +Optional<DeviceConfig> findByDeviceId(Long deviceId)
+  +DeviceConfig save(DeviceConfig config)
+  +void deleteByDeviceId(Long deviceId)
+  +List<DeviceConfig> findAllConfigs()
+}
+
+class DeviceStatusRepository {
+  +Optional<DeviceStatus> findByDeviceId(Long deviceId)
+  +DeviceStatus save(DeviceStatus status)
+  +List<DeviceStatus> findAllStatuses()
+  +List<DeviceStatus> findByStatus(DeviceStatus status)
+}
+
+' Event Publishing Layer
+class DeviceEventService {
+  -DeviceEventPublisher eventPublisher
+  -DeviceEventMapper eventMapper
+  +void publishDeviceCreated(Device device)
+  +void publishDeviceUpdated(Device device)
+  +void publishDeviceDeleted(Long deviceId)
+  +void publishDeviceStatusChanged(DeviceStatus status)
+  +void publishDeviceCommandExecuted(CommandResponse response)
+}
+
+class DeviceEventPublisher {
+  -RabbitTemplate rabbitTemplate
+  +void publishEvent(DeviceEvent event)
+  +void publishToQueue(String queueName, Object message)
+  +void publishToTopic(String topic, Object message)
+}
+
+class DeviceEventMapper {
+  +DeviceCreatedEvent mapToDeviceCreatedEvent(Device device)
+  +DeviceUpdatedEvent mapToDeviceUpdatedEvent(Device device)
+  +DeviceDeletedEvent mapToDeviceDeletedEvent(Long deviceId)
+  +DeviceStatusChangedEvent mapToDeviceStatusChangedEvent(DeviceStatus status)
+}
+
+' Validation Layer
+class DeviceValidator {
+  +void validateDevice(Device device)
+  +void validateDeviceRequest(DeviceCreateRequest request)
+  +void validateDeviceUpdate(DeviceUpdateRequest request)
+  +void validateDeviceId(Long deviceId)
+}
+
+class DeviceCommandValidator {
+  +void validateCommand(DeviceCommandRequest request)
+  +void validateCommandType(CommandType commandType)
+  +void validateCommandParameters(Map<String, Object> parameters)
+}
+
+class DeviceConfigValidator {
+  +void validateConfig(DeviceConfig config)
+  +void validateConfigRequest(DeviceConfigRequest request)
+  +void validateConfigParameters(Map<String, Object> parameters)
+}
+
+' Mapping Layer
+class DeviceMapper {
+  +DeviceDTO toDTO(Device device)
+  +Device toEntity(DeviceDTO dto)
+  +Device toEntity(DeviceCreateRequest request)
+  +Device toEntity(DeviceUpdateRequest request)
+  +List<DeviceDTO> toDTOList(List<Device> devices)
+}
+
+class DeviceCommandMapper {
+  +DeviceCommand toCommandRequest(DeviceCommandRequest request)
+  +CommandResponseDTO toCommandResponse(CommandResponse response)
+  +CommandStatusDTO toCommandStatus(CommandStatus status)
+}
+
+class DeviceStatusMapper {
+  +DeviceStatusDTO toStatusDTO(DeviceStatus status)
+  +HealthStatusDTO toHealthStatus(HealthStatus status)
+  +List<DeviceStatusDTO> toStatusList(List<DeviceStatus> statuses)
+}
+
+' Monitoring Layer
+class DeviceStatusMonitor {
+  -DeviceStatusRepository statusRepository
+  -DeviceHealthChecker healthChecker
+  +DeviceStatus checkDeviceStatus(Long deviceId)
+  +void updateDeviceStatus(Long deviceId, DeviceStatus status)
+  +List<DeviceStatus> getAllDevicesStatus()
+  +HealthStatus monitorDeviceHealth(Long deviceId)
+}
+
+class DeviceHealthChecker {
+  +HealthStatus checkDeviceHealth(Long deviceId)
+  +boolean isDeviceOnline(Long deviceId)
+  +Long getDeviceResponseTime(Long deviceId)
+  +boolean checkDeviceConnectivity(Long deviceId)
+}
+
+class DeviceAlertService {
+  -NotificationService notificationService
+  +void sendDeviceOfflineAlert(Long deviceId)
+  +void sendDeviceErrorAlert(Long deviceId, String error)
+  +void sendDeviceStatusAlert(Long deviceId, DeviceStatus status)
+  +void sendHealthCheckAlert(Long deviceId, HealthStatus status)
+}
+
+' Command Handling Layer
+class DeviceCommandExecutor {
+  -DeviceCommandQueue commandQueue
+  -DeviceCommandRetryService retryService
+  +CommandResponse executeCommand(DeviceCommand command)
+  +CompletableFuture<CommandResponse> executeCommandAsync(DeviceCommand command)
+  +void cancelCommand(String commandId)
+  +CommandStatus getCommandStatus(String commandId)
+}
+
+class DeviceCommandQueue {
+  -Queue<DeviceCommand> queue
+  +void addCommand(DeviceCommand command)
+  +Optional<DeviceCommand> getNextCommand()
+  +boolean removeCommand(String commandId)
+  +int getQueueSize()
+}
+
+class DeviceCommandRetryService {
+  -int maxRetries
+  -Duration retryDelay
+  +CommandResponse retryCommand(String commandId)
+  +boolean shouldRetry(CommandResponse response)
+  +int getRetryCount(String commandId)
+  +void resetRetryCount(String commandId)
+}
+
+' Relationships - Controller to Service
+DeviceRestController "1" -- "1" DeviceServiceImpl : uses
+DeviceCommandController "1" -- "1" DeviceCommandService : uses
+DeviceStatusController "1" -- "1" DeviceStatusService : uses
+DeviceConfigController "1" -- "1" DeviceConfigService : uses
+
+' Relationships - Service to Repository
+DeviceServiceImpl "1" -- "1" DeviceRepository : uses
+DeviceConfigService "1" -- "1" DeviceConfigRepository : uses
+DeviceStatusService "1" -- "1" DeviceStatusRepository : uses
+
+' Relationships - Service to Mapper
+DeviceServiceImpl "1" -- "1" DeviceMapper : uses
+DeviceCommandService "1" -- "1" DeviceCommandMapper : uses
+DeviceStatusService "1" -- "1" DeviceStatusMapper : uses
+
+' Relationships - Service to Validator
+DeviceServiceImpl "1" -- "1" DeviceValidator : uses
+DeviceCommandService "1" -- "1" DeviceCommandValidator : uses
+DeviceConfigService "1" -- "1" DeviceConfigValidator : uses
+
+' Relationships - Service to Event
+DeviceServiceImpl "1" -- "1" DeviceEventService : uses
+DeviceEventService "1" -- "1" DeviceEventPublisher : uses
+DeviceEventService "1" -- "1" DeviceEventMapper : uses
+
+' Relationships - Service to Monitoring
+DeviceStatusService "1" -- "1" DeviceStatusMonitor : uses
+DeviceStatusService "1" -- "1" DeviceHealthChecker : uses
+DeviceStatusService "1" -- "1" DeviceAlertService : uses
+
+' Relationships - Service to Command
+DeviceCommandService "1" -- "1" DeviceCommandExecutor : uses
+DeviceCommandService "1" -- "1" DeviceCommandQueue : uses
+DeviceCommandService "1" -- "1" DeviceCommandRetryService : uses
+
+' Relationships - Internal
+DeviceValidator "1" -- "1" DeviceMapper : validates
+DeviceConfigService "1" -- "1" DeviceConfigRepository : saves
+DeviceStatusMonitor "1" -- "1" DeviceStatusRepository : gets
+DeviceCommandQueue "1" -- "1" DeviceCommandRetryService : retries
+
+@enduml 
