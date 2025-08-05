@@ -67,19 +67,18 @@
 ### 5. Визуализация контекста системы — диаграмма С4
 [Диаграмма контекста системы](diagrams/context/Context%20Diagram.png)
 
-[Диаграмма контейнеров](diagrams/container/Container%20Diagram.png)
 
 # Задание 2. Проектирование микросервисной архитектуры
 
-В этом задании вам нужно предоставить только диаграммы в модели C4. Мы не просим вас отдельно описывать получившиеся микросервисы и то, как вы определили взаимодействия между компонентами To-Be системы. Если вы правильно подготовите диаграммы C4, они и так это покажут.
-
 **Диаграмма контейнеров (Containers)**
 
-Добавьте диаграмму.
+[Диаграмма контейнеров](diagrams/container/Microservices%20Container%20Diagram.png)
 
 **Диаграмма компонентов (Components)**
 
-Добавьте диаграмму для каждого из выделенных микросервисов.
+[Диаграмма компонентов: Device Service](diagrams/components/Device%20Service%20Component%20Diagram.png)
+
+[Диаграмма компонентов: Telemetry Service](diagrams/components/Telemetry%20Service%20Component%20Diagram.png)
 
 **Диаграмма кода (Code)**
 
@@ -100,6 +99,8 @@
 Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
 
 # Задание 5. Работа с docker и docker-compose
+
+[Описание сервиса](apps/temperature-api/README.md)
 
 [docker-compose](apps/docker-compose.yml)
 

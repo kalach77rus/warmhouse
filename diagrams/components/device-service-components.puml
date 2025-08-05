@@ -1,0 +1,30 @@
+@startuml Device Service Component Diagram
+!include ../common/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма компонентов Device Management Service
+
+Container_Boundary(device_service, "Device Management Service") {
+    Component(device_controller, "Device Controller", "Spring REST Controller", "REST API для управления устройствами")
+    Component(device_service_layer, "Device Service", "Spring Service", "Бизнес-логика управления устройствами")
+    Component(device_repository, "Device Repository", "Spring Data JPA", "Доступ к данным устройств")
+    Component(device_event_publisher, "Device Event Publisher", "Spring Events", "Публикация событий устройств")
+    Component(device_validator, "Device Validator", "Spring Validation", "Валидация данных устройств")
+}
+
+Container_Ext(web_app, "Smart Home API", "Java, Spring boot")
+Container_Ext(message_broker, "Message Broker", "RabbitMQ")
+Container_Ext(db, "Database", "PostgreSQL")
+Container_Ext(devices, "Устройства", "Физические устройства")
+
+Rel(web_app, device_controller, "Управляет устройствами", "HTTP REST API")
+Rel(device_controller, device_service_layer, "Вызывает бизнес-логику", "Java")
+Rel(device_service_layer, device_repository, "Сохраняет/получает данные", "JPA")
+Rel(device_service_layer, device_event_publisher, "Публикует события", "Spring Events")
+Rel(device_service_layer, device_validator, "Валидирует данные", "Spring Validation")
+Rel(device_event_publisher, message_broker, "Отправляет события", "AMQP")
+Rel(device_repository, db, "Управляет данными", "SQL")
+Rel_R(devices, device_controller, "Отправляет статус", "HTTP/HTTPS")
+
+@enduml 

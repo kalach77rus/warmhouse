@@ -1,0 +1,35 @@
+@startuml Telemetry Service Component Diagram
+!include ../common/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Диаграмма компонентов Telemetry Service
+
+Container_Boundary(telemetry_service, "Telemetry Service") {
+    Component(telemetry_controller, "Telemetry Controller", "Spring REST Controller", "REST API для получения телеметрии")
+    Component(telemetry_service_layer, "Telemetry Service", "Spring Service", "Бизнес-логика обработки телеметрии")
+    Component(telemetry_repository, "Telemetry Repository", "Spring Data MongoDB", "Доступ к данным телеметрии")
+    Component(temperature_collector, "Temperature Data Collector", "Spring Service", "Сбор данных о температуре")
+    Component(event_subscriber, "Event Subscriber", "Spring Events", "Подписка на события устройств")
+    Component(telemetry_processor, "Telemetry Processor", "Spring Service", "Обработка и агрегация данных")
+    Component(telemetry_validator, "Telemetry Validator", "Spring Validation", "Валидация телеметрических данных")
+}
+
+Container_Ext(web_app, "Smart Home API", "Java, Spring boot")
+Container_Ext(message_broker, "Message Broker", "RabbitMQ")
+Container_Ext(telemetry_db, "Telemetry Database", "MongoDB")
+Container_Ext(temperature_api, "Temperature API", "Внешний сервис")
+Container_Ext(sensors, "Датчики температуры", "Физические датчики")
+
+Rel(web_app, telemetry_controller, "Получает телеметрию", "HTTP REST API")
+Rel(telemetry_controller, telemetry_service_layer, "Вызывает бизнес-логику", "Java")
+Rel(telemetry_service_layer, telemetry_repository, "Сохраняет/получает данные", "MongoDB Driver")
+Rel(telemetry_service_layer, temperature_collector, "Запрашивает данные о температуре", "Java")
+Rel(telemetry_service_layer, telemetry_processor, "Обрабатывает данные", "Java")
+Rel(telemetry_service_layer, telemetry_validator, "Валидирует данные", "Spring Validation")
+Rel(temperature_collector, temperature_api, "Получает данные о температуре", "HTTP API")
+Rel(event_subscriber, message_broker, "Подписывается на события", "AMQP")
+Rel(telemetry_repository, telemetry_db, "Сохраняет телеметрию", "MQL")
+Rel_R(sensors, temperature_api, "Отправляет данные", "HTTP/HTTPS")
+
+@enduml 
