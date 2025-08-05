@@ -75,3 +75,8 @@ node_modules/
 *.sw?
 # OS specific
 .DS_Store
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
