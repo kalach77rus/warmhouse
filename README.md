@@ -96,7 +96,9 @@
 
 ### 2. Документация API
 
-Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
+[Device Service Swagger](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/PisklovCor/architecture-pro-warmhouse/warmhouse/schemas/device-service-api.yaml)
+
+[Telemetry Service Swagger](https://petstore.swagger.io/?url=https://raw.githubusercontent.com/PisklovCor/architecture-pro-warmhouse/warmhouse/schemas/telemetry-service-api.yaml)
 
 # Задание 5. Работа с docker и docker-compose
 
