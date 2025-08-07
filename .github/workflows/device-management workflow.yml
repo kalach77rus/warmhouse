@@ -1,4 +1,4 @@
-name: temperature-api
+name: Device-management workflow
 
 on:
   push:
@@ -32,19 +32,19 @@ jobs:
 
       - name: Компиляция проекта
         run: |
-          cd apps/temperature-api
+          cd apps/device-management
           mvn clean compile
 
       - name: Создание JAR файла
         run: |
-          cd apps/temperature-api
+          cd apps/device-management
           mvn package -DskipTests
 
       - name: Загрузка артефактов сборки
         uses: actions/upload-artifact@v4
         with:
           name: jar-artifact
-          path: apps/temperature-api/target/*.jar
+          path: apps/device-management/target/*.jar
           retention-days: 30
 
   test:
@@ -73,11 +73,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: jar-artifact
-          path: apps/temperature-api/target/
+          path: apps/device-management/target/
 
       - name: Запуск тестов
         run: |
-          cd apps/temperature-api
+          cd apps/device-management
           mvn test
         env:
           SPRING_PROFILES_ACTIVE: test
@@ -87,5 +87,5 @@ jobs:
         if: always()
         with:
           name: test-reports
-          path: apps/temperature-api/target/surefire-reports/
+          path: apps/device-management/target/surefire-reports/
           retention-days: 30

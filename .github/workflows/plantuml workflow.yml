@@ -1,4 +1,4 @@
-name: PlantUML Diagrams
+name: Plantuml workflow
 
 on:
   push:
