@@ -14,7 +14,7 @@
     <groupId>org.example</groupId>
     <artifactId>telemetry</artifactId>
     <version>1.0.0</version>
-    <name>telemetry</name>
+    <name>Telemetry</name>
     <description>Telemetry service polling temperature-api and saving to H2</description>
 
     <properties>
@@ -60,9 +60,6 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>org.example.TelemetryApplication</mainClass>
-                </configuration>
             </plugin>
         </plugins>
     </build>
