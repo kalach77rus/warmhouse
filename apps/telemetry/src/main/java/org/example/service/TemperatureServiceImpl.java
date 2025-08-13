@@ -8,12 +8,13 @@ import org.example.exceptions.NotFoundException;
 import org.example.mapper.TemperatureMapper;
 import org.example.model.Temperature;
 import org.example.repositorie.TemperatureRepository;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.data.domain.Sort;
 
 @Service
 @RequiredArgsConstructor
@@ -96,6 +97,13 @@ public class TemperatureServiceImpl implements TemperatureService {
 
         return mapper.toDto(temperature);
 	}
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TemperatureDto> getAll() {
+        var list = repository.findAll(Sort.by(Sort.Direction.DESC, "timestamp"));
+        return list.stream().map(mapper::toDto).collect(Collectors.toList());
+    }
 }
 
 

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.Instant;
@@ -43,6 +44,34 @@ class TemperatureRepositoryTest {
         assertThat(found.getStatus()).isEqualTo("ok");
         assertThat(found.getSensorType()).isEqualTo("temperature");
         assertThat(found.getDescription()).isEqualTo("initial record");
+    }
+
+    @Test
+    @DisplayName("findAll(Sort) должен возвращать в указанном порядке")
+    void findAllSorted_ShouldReturnInSpecifiedOrder() {
+        Temperature t1 = new Temperature();
+        t1.setSensorId("sensor-1");
+        t1.setValue(10.0);
+        t1.setUnit("Celsius");
+        t1.setTimestamp(Instant.now().minusSeconds(120));
+        t1.setLocation("loc-1");
+        t1.setStatus("ok");
+        t1.setSensorType("temperature");
+        repository.save(t1);
+
+        Temperature t2 = new Temperature();
+        t2.setSensorId("sensor-2");
+        t2.setValue(20.0);
+        t2.setUnit("Celsius");
+        t2.setTimestamp(Instant.now());
+        t2.setLocation("loc-2");
+        t2.setStatus("ok");
+        t2.setSensorType("temperature");
+        repository.save(t2);
+
+        var list = repository.findAll(Sort.by(Sort.Direction.DESC, "timestamp"));
+        assertThat(list).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(list.get(0).getTimestamp()).isAfterOrEqualTo(list.get(1).getTimestamp());
     }
 }
 

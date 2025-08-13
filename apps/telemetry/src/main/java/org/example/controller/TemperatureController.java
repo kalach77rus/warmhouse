@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -94,5 +95,16 @@ public class TemperatureController {
         map.put("description", "Temperature sensor " + dto.getSensorId());
 
         return map;
+    }
+
+    @Operation(summary = "Получить все записи телеметрии", description = "Возвращает список всех измерений температуры, отсортированный по времени убыванию")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Успешно",
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = TemperatureDto.class)))
+    })
+    @GetMapping("/temperatures")
+    public List<TemperatureDto> getAll() {
+        return service.getAll();
     }
 }

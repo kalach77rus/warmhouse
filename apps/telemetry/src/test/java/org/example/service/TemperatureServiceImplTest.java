@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -181,6 +182,34 @@ class TemperatureServiceImplTest {
         long after = repository.count();
 
         assertThat(after).isEqualTo(before);
+    }
+
+    @Test
+    @DisplayName("getAll() возвращает список DTO в порядке убывания времени")
+    void getAll_ShouldReturnDtoList_SortedByTimestampDesc() throws InterruptedException {
+        Temperature t1 = new Temperature();
+        t1.setSensorId("sensor-A");
+        t1.setValue(20.0);
+        t1.setUnit("Celsius");
+        t1.setTimestamp(Instant.now().minusSeconds(60));
+        t1.setLocation("room-1");
+        t1.setStatus("ok");
+        t1.setSensorType("temperature");
+        repository.save(t1);
+
+        Temperature t2 = new Temperature();
+        t2.setSensorId("sensor-B");
+        t2.setValue(21.0);
+        t2.setUnit("Celsius");
+        t2.setTimestamp(Instant.now());
+        t2.setLocation("room-2");
+        t2.setStatus("ok");
+        t2.setSensorType("temperature");
+        repository.save(t2);
+
+        List<org.example.dto.TemperatureDto> all = temperatureService.getAll();
+        assertThat(all).hasSizeGreaterThanOrEqualTo(2);
+        assertThat(all.get(0).getTimestamp()).isAfterOrEqualTo(all.get(1).getTimestamp());
     }
 }
 

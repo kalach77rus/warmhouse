@@ -12,6 +12,7 @@ public class TemperatureMapper {
         dto.setId(entity.getId());
         dto.setSensorId(entity.getSensorId());
         dto.setValue(entity.getValue());
+        dto.setUnit(entity.getUnit());
         dto.setTimestamp(entity.getTimestamp());
         dto.setLocation(entity.getLocation());
         dto.setStatus(entity.getStatus());
