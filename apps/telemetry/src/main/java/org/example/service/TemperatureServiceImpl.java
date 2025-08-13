@@ -3,12 +3,17 @@ package org.example.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.client.TemperatureClient;
+import org.example.dto.TemperatureDto;
+import org.example.exceptions.NotFoundException;
+import org.example.mapper.TemperatureMapper;
 import org.example.model.Temperature;
 import org.example.repositorie.TemperatureRepository;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +23,7 @@ public class TemperatureServiceImpl implements TemperatureService {
     private final TemperatureRepository repository;
     private final TemperatureClient temperatureClient;
     private final PlatformTransactionManager transactionManager;
+    private final TemperatureMapper mapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -70,6 +76,26 @@ public class TemperatureServiceImpl implements TemperatureService {
             log.error("Failed to poll temperature for sensor {}", sensorId, e);
         }
     }
+
+	@Override
+	@Transactional(readOnly = true)
+	public TemperatureDto getFirstByLocation(String location) {
+
+        var temperature = repository.findFirstByLocation(location).orElseThrow(
+                () -> new NotFoundException("Temperature with location %s not found".formatted(location)));
+
+		return mapper.toDto(temperature);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public TemperatureDto getFirstBySensorId(String sensorId) {
+
+        var temperature = repository.findFirstBySensorId(sensorId).orElseThrow(
+                () -> new NotFoundException("Temperature by sensorId %s not found".formatted(sensorId)));
+
+        return mapper.toDto(temperature);
+	}
 }
 
 
