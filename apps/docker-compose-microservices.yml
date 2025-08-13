@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: smarthome-db
+    environment:
+      POSTGRES_DB: smarthome
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./smart_home:/docker-entrypoint-initdb.d  # Автоматическое выполнение скриптов
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+        - smarthome-network
+
+  temperature-api:
+    build:
+      context: ./temperature-api
+      dockerfile: Dockerfile
+    container_name: temperature-api
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
+  app:
+    build:
+      context: ./smart_home
+      dockerfile: Dockerfile
+    container_name: smarthome-app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temperature-api:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
+      - TEMPERATURE_API_URL=http://telemetry:8091
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
+  device-management:
+    build:
+      context: ./device-management
+      dockerfile: Dockerfile
+    container_name: device-management
+    ports:
+      - "8082:8082"
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
+  telemetry:
+    build:
+      context: ./telemetry
+      dockerfile: Dockerfile
+    container_name: telemetry
+    depends_on:
+      temperature-api:
+        condition: service_started
+    environment:
+      - TEMPERATURE_API_BASE-URL=http://temperature-api:8081
+    ports:
+      - "8091:8091"
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
+volumes:
+  postgres_data:
+
+networks:
+  smarthome-network:
+    driver: bridge

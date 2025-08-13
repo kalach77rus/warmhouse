@@ -77,6 +77,4 @@ node_modules/
 .DS_Store
 
 # Docker
-Dockerfile*
-docker-compose*
 .dockerignore

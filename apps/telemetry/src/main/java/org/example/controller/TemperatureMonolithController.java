@@ -15,31 +15,19 @@ import org.example.service.TemperatureService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Tag(name = "Telemetry", description = "Эндпоинты чтения телеметрии температуры")
-public class TemperatureController {
+@Tag(name = "Telemetry (Monolith)", description = "Эндпоинты чтения телеметрии температуры (для монолита)")
+public class TemperatureMonolithController {
 
     private final TemperatureService service;
-
-    @Operation(summary = "Количество записей телеметрии")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешно",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = Long.class)))
-    })
-    @GetMapping("/count")
-    public long count() {
-        return service.count();
-    }
 
     @Operation(summary = "Получить телеметрию по локации")
     @ApiResponses(value = {
@@ -51,14 +39,14 @@ public class TemperatureController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/temperature")
-    public TemperatureDto getTemperature(
+    public Map<String, Object> getTemperature(
             @Parameter(description = "Локация датчика", required = true)
             @RequestParam(required = true) String location) {
 
         log.info("Запрос получения телеметрии по location={}",location);
         var dto = service.getFirstByLocation(location);
         log.info("Телеметрия по location={}",dto);
-        return dto;
+        return convertTemperature(dto);
     }
 
     @Operation(summary = "Получить телеметрию по sensorId")
@@ -71,24 +59,27 @@ public class TemperatureController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     @GetMapping("/temperature/{sensorId}")
-    public TemperatureDto getTemperatureBySensorId(
+    public Map<String, Object> getTemperatureBySensorId(
             @Parameter(description = "Идентификатор датчика", required = true)
             @PathVariable String sensorId) {
 
         log.info("Запрос получения телеметрии по sensorId={}",sensorId);
         var dto = service.getFirstBySensorId(sensorId);
         log.info("Телеметрия по sensorId={}",dto);
-        return dto;
+        return convertTemperature(dto);
     }
 
-    @Operation(summary = "Получить все записи телеметрии", description = "Возвращает список всех измерений температуры, отсортированный по времени убыванию")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешно",
-                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = TemperatureDto.class)))
-    })
-    @GetMapping("/temperatures")
-    public List<TemperatureDto> getAll() {
-        return service.getAll();
+    private Map<String, Object> convertTemperature(TemperatureDto dto) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("value", dto.getValue());
+        map.put("unit", dto.getUnit());
+        map.put("timestamp", dto.getTimestamp());
+        map.put("location", dto.getLocation());
+        map.put("status", dto.getStatus());
+        map.put("sensor_id", dto.getSensorId());
+        map.put("sensor_type", dto.getSensorType());
+        map.put("description", "Temperature sensor " + dto.getSensorId());
+
+        return map;
     }
 }
