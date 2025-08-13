@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:telemetrydb-test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: admin
+    password: admin
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  task:
+    scheduling:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+temperature:
+  api:
+    base-url: http://localhost:0
+
+telemetry:
+  poll-interval-ms: 60000
+

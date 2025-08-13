@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.client.TemperatureClient;
 import org.example.model.Temperature;
-import org.example.repositorie.TemperatureLogRepository;
+import org.example.repositorie.TemperatureRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -15,7 +15,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Slf4j
 public class TemperatureServiceImpl implements TemperatureService {
 
-    private final TemperatureLogRepository repository;
+    private final TemperatureRepository repository;
     private final TemperatureClient temperatureClient;
     private final PlatformTransactionManager transactionManager;
 
