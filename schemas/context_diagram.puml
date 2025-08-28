@@ -1,0 +1,12 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+Person(Customer, "Житель", "Тот, кто использует Теплый дом")
+Person(Admin, "Админ", "Тот, кто управляет системой Теплый дом")
+
+System(WarmHomePlatform, "Теплый дом", "Платформа для регулирования температуры в домах")
+
+Rel(Customer, WarmHomePlatform, "Работает через web-интерфейс с конкретным датчиком")
+Rel(Admin, WarmHomePlatform, "Работает со всеми датчиками или с конкретным датчиком")
+
+@enduml
