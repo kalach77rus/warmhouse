@@ -1,0 +1,15 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(WebApp, "Web-приложение", "React") {
+    Component(Desktop, "Морда сайта", "", "Место, где пользователь может находиться без авторизации: главная, лендинги")
+    Component(Router, "Роутер", "", "Определяет куда пользователь может ходить")
+    Component(Auth, "Компонент авторизации", "", "Экраны логин/пароля, восставления пароля и тд")
+    Component(Desktop_lk, "Личный кабинет", "", "Здесь пользователь управляет своими устройствами")
+}
+
+Rel(Router, Desktop, "")
+Rel(Router, Desktop_lk, "")
+Rel(Router, Auth, "")
+
+@enduml

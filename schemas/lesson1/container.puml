@@ -1,0 +1,23 @@
+@startuml
+!define C4Container https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!includeurl C4Container
+
+' Внешние сущности
+Person(Customer, "Пользователь", "")
+System_Ext(Device, "Датчик", "")
+' Контейнеры системы
+System_Boundary(System, "Теперь умный дом") {
+    Container(WebApp, "Web-приложение", "React, Node.js", "Рисует пользователям интрефейс работы с датчиками")
+    Container(BackendApi, "Backend API", "REST, Swagger", "Обрабатывает запросы клиентских приложений")
+    Container(DeviceService, "DeviceService", "Go", "Организует работу с датчиками")
+    ContainerDb(Database, "База данных", "PostgreSQL", "Хранит информацию клиентов и датчиков")
+}
+
+' Потоки данных
+Rel(Customer, WebApp, "Делает запросы  для подключения датчиков и просмотра статистики")
+Rel(WebApp, BackendApi, "Делает запросы к БД")
+Rel(BackendApi, Database, "Обрабатывает запросы")
+Rel(BackendApi, DeviceService, "Посылает команды датчикам")
+Rel(DeviceService, Device, "Управляет датчиками")
+Rel(DeviceService, Database, "Сохраняет телеметрию")
+@enduml

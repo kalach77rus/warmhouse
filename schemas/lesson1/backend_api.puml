@@ -1,0 +1,16 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+ContainerDb(Database, "База данных", "")
+System(DeviceService, "DeviceService", "")
+Container(BackendApi, "Backend Api") {
+    Component(Auth, "Авторизация и Аутентификация", "", "Управление состоянием пользователя, права пользователя")
+    Component(DeviceListing, "Датчики пользователя", "",  "Получение списка датчиков, управление датчиками")
+
+}
+
+Rel(Auth, Database, "Сессия пользователя, проверка прав")
+Rel(DeviceListing, Database, "Список датчиков")
+Rel(DeviceListing, DeviceService, "Управление датчиками")
+
+
+@enduml
