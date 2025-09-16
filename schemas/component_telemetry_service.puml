@@ -1,0 +1,23 @@
+@startuml
+
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+
+Container(CustomerUI,     "Customer Web UI",      "Angular",  "Customer web interface")
+Container(DeviceService,  "Warm Device Service",  "Go", "Handles device request")
+
+ComponentDb(Database, "Postgres", "Stores user data")
+
+Boundary(UserService, "Telemetry Service") {
+    Component(ControllerLayer,  "Controller Layer", "Go", "Handles endpoints")
+    Component(ServiceLayer,     "Service Layer",    "Go", "Implements business logic")
+    Component(RepositoryLayer,  "Repository Layer", "Go", "Accesses user DB")
+}
+
+Rel(CustomerUI, ControllerLayer, "Routes requests")
+Rel(ControllerLayer, ServiceLayer, "Handles logic")
+Rel(ServiceLayer, RepositoryLayer, "DB access")
+Rel(ServiceLayer, DeviceService, "Pass request to specific device service")
+Rel(RepositoryLayer, Database, "Stores users")
+
+@enduml

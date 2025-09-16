@@ -1,0 +1,31 @@
+@startuml
+
+class ControllerLayer {
+    +route(request: HttpRequest): HttpResponse - Routes incoming requests to the appropriate service method
+}
+
+class ServiceLayer {
+    +createSession(login: string, password: string): string - Create token by auth
+
+    +registerUser(new_info: UserInfo): boolean - Register new user
+    +updateUser(new_info: UserInfoDetailed): boolean - Manages user information and settings
+
+    +addHouse(user_id: int, relay: RelayInfo): boolean - Add new user house
+    +removeHouse(user_id: int, relay_id: int): boolean - Delete user house
+
+    +validateToken(token: string): boolean - Validates the Bearer token
+    +validateRelayInfo(relay: RelayInfo): boolean - Check relay exists
+}
+
+class RepositoryLayer {
+    +getUserInfo(token: string): UserInfo - Get user persistant info
+    +setUserInfo(new_info: UserInfo): boolean - Register new user
+
+    +getUserDetailedInfo(token: string): UserInfoDetailed - Get user detailed info
+    +setUserDetailedInfo(new_info: UserInfoDetailed): boolean - Update user info
+}
+
+ControllerLayer --> ServiceLayer : Validates token
+ServiceLayer --> RepositoryLayer : Resolves target service
+
+@enduml

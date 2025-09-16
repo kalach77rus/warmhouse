@@ -1,0 +1,46 @@
+@startuml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4.puml
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(customer, "Customer", "Клиент платформы Warm House")
+Person(admin, "Admin", "Администратор платформы Warm House")
+
+System_Boundary(warm_house, "Cистема умного дома компании WarmHouse") {
+    Container(webui, "WEB UI", "Angular")
+    Container(api_gateway, "API Gateway", "Go")
+
+
+    Container(user_service, "User service")
+    ContainerDb(users_db, "Users DB", "PostgreeSQL")
+    BiRel(user_service, users_db, "SQL", "Read/Writes")
+
+    Container(telemetry_service, "Telemetry service")
+    Container(device_service, "Device service")
+    Container(automation_service, "Automation Service")
+
+    ContainerDb(app_db, "Warmhouse DB", "PostgreeSQL")
+
+    BiRel(api_gateway, user_service, "Rest Api")
+    BiRel(api_gateway, telemetry_service, "Rest Api")
+    BiRel(api_gateway, device_service, "Rest Api")
+    BiRel(api_gateway, automation_service, "Rest Api")
+
+    BiRel(webui, api_gateway, "Rest Api")
+
+    BiRel(telemetry_service, app_db, "SQL", "Read/Writes")
+    BiRel(device_service, app_db, "SQL", "Read/Writes")
+    BiRel(automation_service, app_db, "SQL", "Read/Writes")
+
+
+}
+
+Container_Ext(customerDeviceHub, "Customer device HUB", "Содержит адаптеры для протоколов IoT устройств (HTTP/MQTT/Zigbee/)")
+Container_Ext(customerDevice, "Customer IoT device", "Устройство умного дома")
+
+BiRel(customer, webui, "HTTPS", "Customer UI interface")
+BiRel(admin, webui, "HTTPS", "Administartive UI interface")
+
+BiRel(customerDeviceHub, api_gateway, "Rest Api")
+BiRel(customerDevice, customerDeviceHub, "HTTP/Zigbee/MQTT")
+
+@enduml

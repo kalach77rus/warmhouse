@@ -6,34 +6,35 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
+	"temp_api/handlers"
 	"time"
-
-	"smarthome/db"
-	"smarthome/handlers"
-	"smarthome/services"
 
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	// Set up database connection
-	dbURL := getEnv("DATABASE_URL", "postgres://postgres:superpuperpass@localhost:5432/smarthome")
-	database, err := db.New(dbURL)
-	if err != nil {
-		log.Fatalf("Unable to connect to database: %v\n", err)
+func getServerAddr() string {
+	port := os.Getenv("TEMP_API_PORT")
+	if port == "" {
+		port = "8081"
 	}
-	defer database.Close()
+	// Если порт уже начинается с ":", оставляем, иначе добавляем
+	if !strings.HasPrefix(port, ":") {
+		port = ":" + port
+	}
+	return port
+}
 
-	log.Println("Connected to database successfully")
-
-	// Initialize temperature service
-	temperatureAPIURL := getEnv("TEMPERATURE_API_URL", "http://localhost:8081")
-	temperatureService := services.NewTemperatureService(temperatureAPIURL)
-	log.Printf("Temperature service initialized with API URL: %s\n", temperatureAPIURL)
-
+func main() {
 	// Initialize router
 	router := gin.Default()
+
+	// Start server
+	srv := &http.Server{
+		Addr:    getServerAddr(),
+		Handler: router,
+	}
 
 	// Health check endpoint
 	router.GET("/health", func(c *gin.Context) {
@@ -42,18 +43,8 @@ func main() {
 		})
 	})
 
-	// API routes
-	apiRoutes := router.Group("/api/v1")
-
-	// Register sensor routes
-	sensorHandler := handlers.NewSensorHandler(database, temperatureService)
-	sensorHandler.RegisterRoutes(apiRoutes)
-
-	// Start server
-	srv := &http.Server{
-		Addr:    getEnv("PORT", ":8080"),
-		Handler: router,
-	}
+	router.GET("/temperature", handlers.TempByLocation)
+	router.GET("/temperature/:sensorId", handlers.TempBySensor)
 
 	// Start the server in a goroutine
 	go func() {

@@ -1,0 +1,316 @@
+openapi: 3.0.3
+info:
+  title: IoT Telemetry & Device Management Service
+  version: 1.0.0
+  description: |-
+    REST API для работы с IoT-устройствами:
+    - Сбор и предоставление телеметрии.
+    - Мониторинг состояния устройств.
+    - Управление жизненным циклом устройств.
+
+servers:
+  - url: http://localhost:8000
+    description: API Gateway (Recommended - Single Entry Point)
+  - url: http://localhost:8083
+    description: Device Service
+  - url: http://localhost:8082
+    description: Telemetry Service
+
+paths:
+  /gateway/status:
+    get:
+      summary: Gateway Status
+      description: Получить статус API Gateway и информацию о подключённых сервисах
+      tags: [API Gateway]
+      servers:
+        - url: http://localhost:8000
+      responses:
+        '200':
+          description: Gateway status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayStatus'
+
+  /gateway/services:
+    get:
+      summary: Available Services
+      description: Список всех доступных микросервисов через Gateway
+      tags: [API Gateway]
+      servers:
+        - url: http://localhost:8000
+      responses:
+        '200':
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceInfo'
+  /devices:
+    get:
+      tags: [Devices API]
+      summary: Получить список устройств
+      responses:
+        '200':
+          description: Список зарегистрированных устройств
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+    post:
+      tags: [Devices API]
+      summary: Добавить новое устройство
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCreateRequest'
+      responses:
+        '201':
+          description: Устройство успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+
+  /devices/{deviceId}:
+    get:
+      tags: [Devices API]
+      summary: Получить информацию об устройстве
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Информация об устройстве
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+    delete:
+      tags: [Devices API]
+      summary: Удалить устройство
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Устройство успешно удалено
+
+  /devices/{deviceId}/state:
+    get:
+      tags: [Devices API]
+      summary: Получить текущее состояние устройства
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Состояние устройства
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceState'
+
+  /telemetry/ingest:
+    post:
+      tags: [Telemetry API]
+      summary: Отправка телеметрии от устройства
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TelemetryIngestRequest'
+      responses:
+        '200':
+          description: Телеметрия успешно принята
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetryIngestResponse'
+
+  /devices/{deviceId}/telemetry:
+    get:
+      tags: [Telemetry API]
+      summary: Получить телеметрию устройства
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 100
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Данные телеметрии
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TelemetryRecord'
+
+components:
+  schemas:
+    GatewayStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "healthy"
+        version:
+          type: string
+          example: "1.0.0"
+        uptime:
+          type: string
+          example: "2h 30m 45s"
+        services:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            device-service: "healthy"
+            telemetry-service: "healthy"
+            user-service: "healthy"
+
+    ServiceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "device-service"
+        url:
+          type: string
+          example: "http://device-service:8082"
+        status:
+          type: string
+          example: "healthy"
+        version:
+          type: string
+          example: "1.0.0"
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "device-123"
+        name:
+          type: string
+          example: "Temperature Sensor Living Room"
+        type:
+          type: string
+          example: "temperature-sensor"
+        createdAt:
+          type: string
+          format: date-time
+        lastSeen:
+          type: string
+          format: date-time
+
+    DeviceCreateRequest:
+      type: object
+      required: [name, type]
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        metadata:
+          type: object
+          additionalProperties: true
+
+    DeviceState:
+      type: object
+      properties:
+        deviceId:
+          type: string
+        online:
+          type: boolean
+        lastSeen:
+          type: string
+          format: date-time
+        batteryLevel:
+          type: number
+          format: float
+          example: 87.5
+        errors:
+          type: array
+          items:
+            type: string
+
+    TelemetryIngestRequest:
+      type: object
+      properties:
+        deviceId:
+          type: string
+          example: "sensor-123"
+        timestamp:
+          type: string
+          format: date-time
+        metrics:
+          type: object
+          additionalProperties:
+            type: number
+          example:
+            temperature: 23.5
+            humidity: 60.1
+
+    TelemetryIngestResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [accepted, rejected]
+        message:
+          type: string
+
+    TelemetryRecord:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        metrics:
+          type: object
+          additionalProperties:
+            type: number
+
+tags:
+  - name: API Gateway
+    description: Центральная точка входа для всех API запросов
+  - name: Devices API
+    description: Управление IoT устройствами
+  - name: Telemetry API
+    description: Сбор и анализ телеметрических данных

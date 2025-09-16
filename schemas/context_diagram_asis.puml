@@ -1,0 +1,26 @@
+@startuml
+!include <C4/C4_Container>
+
+title Диаграмма контекста монолитной системы (AS-IS)
+
+Person(user, "Владелец дома", "Управляет отоплением и просматривает температуру через веб-интерфейс")
+Person(technician, "Cпециалист по подключению", "Подключает новое оборудование, каждая установка сопровождается выездом специалиста по подключению")
+
+
+
+System_Boundary(warmhouse_sys, "Warmhouse system",) {
+  Container(app, "Smarthome Application", "Go", "Позволяет пользователям просматривать и задавать температуру в доме")
+  SystemDb(db, "smarthome", $descr="App database", $type="PostgreSQL")
+  System_Ext(temp_sensor, "Датчики температуры", "Установленные в домах датчики температуры")
+  System_Ext(heater_relay, "Термостаты", "Установленные в домах термостаты для управления отоплением")
+  
+
+  BiRel_L(app, db, "Reads/Writes", "SQL")
+  Rel(temp_sensor, app, "Данные о текущей температуре", "http")
+  Rel(app, heater_relay, "Задание целевой температуры, включение\выключение отопления", "http")
+}
+
+
+BiRel(user, app, "Доступ к WEB интерфейсу системы", "HTTPS")
+Rel(technician, app, "Подключение нового дома к системе", "Физиеский выезд")
+@enduml
