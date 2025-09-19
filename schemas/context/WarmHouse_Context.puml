@@ -11,7 +11,7 @@ title Система "Тёплый Дом" AS IS
 
 
 Boundary(home, "Домохозяйство") {
-    Person_Ext(customer, "Пользователь", "Управляет отоплением в своём доме")
+    Person_Ext(customer, "Пользователь", "")
     System_Ext(heat_system, "Система отопления", "", $sprite="house_chimney")
 }
 
