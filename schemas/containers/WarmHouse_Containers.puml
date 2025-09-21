@@ -7,9 +7,9 @@ Person_Ext(user, "Пользователь", "")
 
 Boundary(home, "Домохозяйство", "содержит один или несколько модулей") {
     Container(heat, "ПАК Модуль отопления", "Java, REST API", "Предоставляет данные отопления и механизмы управления им")
-    Container(locks, "ПАК Модуль дверей", "Java, REST API", "Предоставляет данные отопления и механизмы управления им")
-    Container(surveillance, "ПАК Модуль видеонаблюдения", "Java, REST API", "Предоставляет данные отопления и механизмы управления им")
-    Container(light, "ПАК Модуль освещения", "Java, REST API", "Предоставляет данные отопления и механизмы управления им")
+    Container(locks, "ПАК Модуль дверей", "Java, REST API", "Предоставляет данные замков и механизмы управления им")
+    Container(surveillance, "ПАК Модуль видеонаблюдения", "Java, REST API", "Предоставляет данные видеокамер и механизмы управления им")
+    Container(light, "ПАК Модуль освещения", "Java, REST API", "Предоставляет данные освещения и механизмы управления им")
 }
 
 Enterprise_Boundary(enterprise, "Тёплый Дом") {
@@ -22,32 +22,32 @@ Enterprise_Boundary(enterprise, "Тёплый Дом") {
     Container(auth, "User service", "Java, Spring", "Аутентификация. авторизация и каталог пользователей")
 
     Boundary(modules, "Сервисы модулей") {
-        Container(heat_be, "Сервис отопления", "Java, Spring", "")
-        Container(locks_be, "Сервис дверей", "Java, Spring", "")
-        Container(surveillance_be, "Сервис видеонаблюдения", "Java, Spring", "")
-        Container(light_be, "Сервис освещения", "Java, Spring", "")
+        Container(heat_be, "Сервис отопления", "Java, Spring", "Взаимодействие с соответствующим ПАК в доме")
+        Container(locks_be, "Сервис дверей", "Java, Spring", "Взаимодействие с соответствующим ПАК в доме")
+        Container(surveillance_be, "Сервис видеонаблюдения", "Java, Spring", "Взаимодействие с соответствующим ПАК в доме")
+        Container(light_be, "Сервис освещения", "Java, Spring", "Взаимодействие с соответствующим ПАК в доме")
     }
 
-    ContainerQueue(eventq, "Очередь событий")
+    ContainerQueue(eventq, "Очередь событий", "kafka")
 
 }
 
-Rel_D(heat, gateway, "")
-Rel_D(surveillance, gateway, "")
-Rel_D(light, gateway, "")
-Rel_D(locks, gateway, "")
-Rel(gateway, auth, "")
+BiRel(heat, gateway, "тут и далее - передача показателей, получение управляющих сигналог", " HTTP или специфичный для устройства протокол")
+BiRel(surveillance, gateway, "...")
+BiRel(light, gateway, "...")
+BiRel(locks, gateway, "...")
+Rel(gateway, auth, "аутентификация, авторизация", "HTTP, REST")
 
-Rel_U(modules, gateway, "")
-Rel(modules, eventq, "")
-Rel(scenarios, eventq, "")
-Rel(scenarios, modules, "")
-Rel(bff, scenarios, "")
-Rel(bff, auth, "")
+BiRel_U(modules, gateway, "получение данных, передача управляющих сигналов", "HTTP, REST")
+Rel(modules, eventq, "события устройств", "kafka")
+Rel(scenarios, eventq, "получение событий", "kafka")
+Rel(scenarios, modules, "управляющие сигналы", "HTTP, REST")
+Rel(bff, scenarios, "сохранение польз.сценария, запуск сценариев")
+Rel(bff, auth,"аутентификация, авторизация", "HTTP, REST")
 
-Rel(user, user_gui, "")
-Rel(user_gui, bff, "")
-Rel(bff, modules, "")
+Rel(user, user_gui, "", "через браузер")
+Rel(user_gui, bff, "", "HTTP, REST")
+Rel(bff, modules, "получение данных, передача управляющих сигналов")
 
 
 @enduml

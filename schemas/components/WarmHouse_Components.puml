@@ -1,0 +1,11 @@
+@startuml warmhouse containers diagram
+!include ../assets/C4_templates/C4_Component.puml
+
+title Система "Тёплый Дом", сервис "Gateway для модулей" (C4 Components)
+
+Boundary(service, "Gateway для модулей") {
+    Component(register_ctrl, "Контроллер регистрации модулей")
+    Component(module_adapter, "Адаптер к типу модулей")
+}
+
+@enduml
