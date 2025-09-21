@@ -1,0 +1,19 @@
+```puml
+@startuml
+title WarmHouse Context Diagram (monolith)
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
+
+Person(user, "User", "A user of the WarmHouse system")
+
+System(warmHouseSystem, "WarmHouse System", "Monolith system managing temperature sensors")
+
+System_Ext(sensor, "Temperature sensors", "Uses REST API, JSON data format")
+
+Rel(user, warmHouseSystem, "Uses the system via Web UI")
+Rel(warmHouseSystem,sensor,"Communicates with temperature sensors")
+
+@enduml
+```
