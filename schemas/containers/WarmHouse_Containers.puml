@@ -29,6 +29,7 @@ Enterprise_Boundary(enterprise, "Тёплый Дом") {
     }
 
     ContainerQueue(eventq, "Очередь событий", "kafka")
+    ContainerQueue(messageq, "Брокер данных телеметрии", "kafka")
 
 }
 
@@ -36,18 +37,21 @@ BiRel(heat, gateway, "тут и далее - передача показател
 BiRel(surveillance, gateway, "...")
 BiRel(light, gateway, "...")
 BiRel(locks, gateway, "...")
-Rel(gateway, auth, "аутентификация, авторизация", "HTTP, REST")
-
-BiRel_U(modules, gateway, "получение данных, передача управляющих сигналов", "HTTP, REST")
-Rel(modules, eventq, "события устройств", "kafka")
-Rel(scenarios, eventq, "получение событий", "kafka")
-Rel(scenarios, modules, "управляющие сигналы", "HTTP, REST")
-Rel(bff, scenarios, "сохранение польз.сценария, запуск сценариев")
-Rel(bff, auth,"аутентификация, авторизация", "HTTP, REST")
 
 Rel(user, user_gui, "", "через браузер")
 Rel(user_gui, bff, "", "HTTP, REST")
 Rel(bff, modules, "получение данных, передача управляющих сигналов")
+
+Rel_U(modules, gateway, "передача управляющих сигналов", "HTTP, REST")
+Rel(gateway, messageq, "передача данных телеметрии", "kafka")
+Rel(modules,messageq , "получение данных телеметрии", "kafka")
+Rel(modules, eventq, "события устройств", "kafka")
+Rel(scenarios, eventq, "получение событий", "kafka")
+Rel(scenarios, modules, "управляющие сигналы", "HTTP, REST")
+Rel(bff, scenarios, "сохранение польз.сценария, запуск сценариев")
+
+Rel_R(bff, auth,"аутентификация, авторизация", "HTTP, REST")
+Rel_L(gateway, auth, "аутентификация, авторизация", "HTTP, REST")
 
 
 @enduml
