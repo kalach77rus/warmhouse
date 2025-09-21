@@ -3,9 +3,6 @@
 !include ../assets/icons/go_original_wordmark.puml
 !include ../assets/icons/house_chimney.puml
 
-LAYOUT_TOP_DOWN()
-' LAYOUT_AS_SKETCH()
-' LAYOUT_WITH_LEGEND()
 
 title Система "Тёплый Дом" AS IS
 
