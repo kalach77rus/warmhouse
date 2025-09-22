@@ -1,0 +1,87 @@
+@startuml warmhouse gateway class diagram
+
+title Система "Тёплый Дом" — Диаграмма классов: Gateway для модулей
+
+skinparam classAttributeIconSize 0
+
+package "api" {
+
+    class ControlSignalsController {
+        + ResponseEntity<Void> sendCommand(SendCommandRequest request)
+    }
+
+    class PullDataController {
+        + ResponseEntity<ModuleDataDto> getData(String moduleId, QueryParams params)
+    }
+
+    class ActiveGatherController {
+        + ResponseEntity<Void> postTelemetry(TelemetryRecordDto record)
+    }
+
+    class RegisterController {
+        + ResponseEntity<Void> register(RegisterModuleRequest request)
+        + ResponseEntity<Void> heartbeat(String moduleId)
+    }
+}
+
+package "service" {
+
+    class CommandService {
+        + void sendCommand(String moduleId, Command command)
+    }
+
+    class PullDataService {
+        + ModuleData getData(String moduleId, QueryParams params)
+    }
+
+    class QueryService {
+        + void handleTelemetry(TelemetryRecord record)
+    }
+
+    class ModulesRegistryService {
+        + void register(RegisterModuleRequest request)
+        + void heartbeat(String moduleId)
+    }
+
+    class RoutingService {
+        + ModuleRoute resolve(String moduleId)
+    }
+}
+
+package "integration" {
+
+    class ModuleAdapter {
+        + void sendCommand(ModuleRoute route, Command command)
+        + ModuleData fetchData(ModuleRoute route, QueryParams params)
+    }
+
+    class DataBrokerProducer {
+        + void publish(TelemetryRecord record)
+    }
+}
+
+package "db" {
+
+    interface RoutingRepository {
+        + ModuleRoute findByModuleId(String moduleId)
+        + void save(ModuleRoute route)
+    }
+}
+
+ControlSignalsController -down-> CommandService
+PullDataController -down-> PullDataService
+ActiveGatherController -down-> QueryService
+RegisterController -down-> ModulesRegistryService
+
+CommandService -down-> RoutingService
+PullDataService -down-> RoutingService
+RoutingService -down-> RoutingRepository
+
+CommandService --> ModuleAdapter
+PullDataService --> ModuleAdapter
+QueryService --> DataBrokerProducer
+ModulesRegistryService --> RoutingRepository
+
+@enduml
+
+
