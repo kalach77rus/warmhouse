@@ -64,6 +64,10 @@ CommandsController -down-> CommandService
 LoadDataController -down-> LoadDataService
 TelemetryController -down-> TelemetryService
 
+TelemetryService -down-> TelemetryRepository
+LoadDataService -down-> TelemetryRepository
+CommandService -down-> HeatConfigurationRepository
+
 
 @enduml
 
