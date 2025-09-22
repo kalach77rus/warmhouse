@@ -16,7 +16,7 @@ Boundary(service, "Сервис сценариев") {
 
 ComponentDb_Ext(pgdb, "PostgreSQL", "", "")
 System_Ext(bff, "Backend For Frontend", "", "")
-SystemQueue_Ext(event_queue, "Очередь событий", "", "Apache Kafka")
+SystemQueue_Ext(event_queue, "Очередь событий", "Kafka", "")
 System_Ext(modules_service, "Сервисы модулей умного дома", "", "")
 
 Rel(bff, custom_scenarion_ctrl, "CRUD пользовательских сценариев", "HTTP, REST")

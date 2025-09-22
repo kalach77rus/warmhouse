@@ -24,7 +24,7 @@ Boundary(main_system, "Система Тёплый Дом") {
 
     ComponentDb_Ext(pgdb, "PostgreSQL", "", "")
     System_Ext(module_srv, "Микросервис работы с модулем умного дома", "", "")
-    SystemQueue_Ext(data_broker, "Брокер данных телеметрии", "", "")
+    SystemQueue_Ext(data_broker, "Брокер данных телеметрии", "Kafka", "")
 
 }
 
