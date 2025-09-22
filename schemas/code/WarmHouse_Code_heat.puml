@@ -1,0 +1,70 @@
+@startuml warmhouse heat class diagram
+
+title Система "Тёплый Дом" — Диаграмма классов: Сервис отопления
+
+skinparam classAttributeIconSize 0
+
+package "api" {
+
+    class CommandsController {
+
+    }
+
+    class LoadDataController {
+
+    }
+
+    class TelemetryController {
+
+    }
+
+}
+
+package "service" {
+
+    class CommandService {
+
+    }
+
+    class LoadDataService {
+
+    }
+
+    class TelemetryService {
+
+    }
+
+}
+
+package "integration" {
+
+    class ModuleAdapter {
+
+    }
+
+    class EventProducer {
+
+    }
+
+}
+
+package "db" {
+
+    interface HeatConfigurationRepository {
+
+    }
+
+    interface TelemetryRepository {
+
+    }
+
+}
+
+CommandsController -down-> CommandService
+LoadDataController -down-> LoadDataService
+TelemetryController -down-> TelemetryService
+
+
+@enduml
+
+
