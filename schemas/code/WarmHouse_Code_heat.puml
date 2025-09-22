@@ -14,10 +14,6 @@ package "api" {
 
     }
 
-    class TelemetryController {
-
-    }
-
 }
 
 package "service" {
@@ -46,6 +42,10 @@ package "integration" {
 
     }
 
+    class TelemetryConsumer {
+
+    }
+
 }
 
 package "db" {
@@ -62,11 +62,16 @@ package "db" {
 
 CommandsController -down-> CommandService
 LoadDataController -down-> LoadDataService
-TelemetryController -down-> TelemetryService
 
 TelemetryService -down-> TelemetryRepository
 LoadDataService -down-> TelemetryRepository
 CommandService -down-> HeatConfigurationRepository
+
+LoadDataService --> ModuleAdapter
+CommandService --> ModuleAdapter 
+CommandService --> EventProducer 
+TelemetryService --> EventProducer 
+TelemetryConsumer --> TelemetryService
 
 
 @enduml
