@@ -19,6 +19,7 @@ entity "Module" as module {
   household_id: UUID
   type: enum   // heat, locks, surveillance, light
   model: string
+  protocol: string // HTTP или что-то другое
   metadata: jsonb
   registered_at: timestamptz
 }
@@ -26,9 +27,7 @@ entity "Module" as module {
 entity "ModuleRoute" as route {
   * module_id: UUID   // PK = FK to Module.id (1:1)
   --
-  endpoint: string    // host:port or URL
-  protocol: string    // HTTP, proprietary
-  auth_token: string
+  endpoint: string    // URL 
   last_heartbeat_at: timestamptz
   updated_at: timestamptz
 }
@@ -39,7 +38,6 @@ entity "Telemetry" as telemetry {
   module_id: UUID
   ts: timestamptz
   payload: jsonb
-  source: enum        // push, pull
 }
 
 entity "Command" as command {
@@ -67,7 +65,6 @@ entity "User" as usr {
   * id: UUID
   --
   email: string
-  password_hash: string
   role: enum          // admin, user, installer
   created_at: timestamptz
 }
@@ -98,7 +95,6 @@ entity "ScenarioSchedule" as scenario_schedule {
   cron_expression: string
   timezone: string
   enabled: boolean
-  next_run_at: timestamptz
   created_at: timestamptz
 }
 
