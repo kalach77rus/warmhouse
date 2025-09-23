@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: WarmHouse - Modules Gateway API
+  version: 0.1.0
+  description: API шлюза для модулей умного дома (регистрация, heartbeat, команды, запрос данных, push-телеметрия)
+servers:
+  - url: https://api.example.com/gateway
+paths:
+  /external/modules/register:
+    post:
+      summary: Регистрация модуля
+      operationId: registerModule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleMetadataRequest'
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+  /external/modules/heartbeat:
+    post:
+      summary: Heartbeat модуля
+      operationId: heartbeat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleMetadataRequest'
+      responses:
+        '200':
+          description: Подтверждение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeartbeatResponse'
+  /external/modules/telemetry:
+    post:
+      summary: Push-телеметрия от модулей
+      operationId: pushTelemetry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleTelemetry'
+      responses:
+        '202':
+          description: Принято к обработке
+  /internal/modules/{moduleId}/query:
+    get:
+      summary: Pull-запрос телеметрии у модуля
+      operationId: queryTelemetry
+      parameters:
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Телеметрия
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModuleTelemetry'
+  /internal/modules/commands:
+    post:
+      summary: Отправка управляющей команды модулю
+      operationId: sendCommand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModuleCommand'
+      responses:
+        '200':
+          description: Результат
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandResponse'
+components:
+  schemas:
+    ModuleMetadataRequest:
+      type: object
+      required: [moduleId, type, protocol]
+      properties:
+        moduleId:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [heat, locks, surveillance, light]
+        protocol:
+          type: string
+          example: HTTP
+        endpoint:
+          type: string
+          format: uri
+        metadata:
+          type: object
+          additionalProperties: true
+    RegisterResponse:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+        credentials:
+          type: object
+          additionalProperties: true
+    HeartbeatResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        nextIntervalSec:
+          type: integer
+    ModuleTelemetry:
+      type: object
+      required: [moduleId, timestamp, payload]
+      properties:
+        moduleId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        ingestionMethod:
+          type: string
+          enum: [push, pull]
+        payload:
+          type: object
+          additionalProperties: true
+    ModuleCommand:
+      type: object
+      required: [moduleId, name]
+      properties:
+        moduleId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        params:
+          type: object
+          additionalProperties: true
+        correlationId:
+          type: string
+    CommandResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [queued, sent, acked, failed]
+        result:
+          type: object
+          additionalProperties: true
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+
+

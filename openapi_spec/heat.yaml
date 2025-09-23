@@ -1,0 +1,114 @@
+openapi: 3.0.3
+info:
+  title: WarmHouse - Heat Module Service API
+  version: 0.1.0
+  description: API сервиса отопления. Для BFF/сценариев и для взаимодействия с physical module (если есть прямые вызовы)
+servers:
+  - url: https://api.example.com/heat
+paths:
+  /modules/{moduleId}/telemetry:
+    get:
+      summary: Получить текущую телеметрию отопления
+      operationId: getTelemetry
+      parameters:
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Телеметрия
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeatTelemetry'
+  /modules/{moduleId}/commands/setpoint:
+    post:
+      summary: Установить целевую температуру
+      operationId: setSetpoint
+      parameters:
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value]
+              properties:
+                value:
+                  type: number
+                  format: float
+      responses:
+        '200':
+          description: Установлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandAck'
+  /modules/{moduleId}/commands/mode:
+    post:
+      summary: Установить режим (off/heat/eco)
+      operationId: setMode
+      parameters:
+        - in: path
+          name: moduleId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [mode]
+              properties:
+                mode:
+                  type: string
+                  enum: [off, heat, eco]
+      responses:
+        '200':
+          description: Установлено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandAck'
+components:
+  schemas:
+    HeatTelemetry:
+      type: object
+      properties:
+        moduleId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        temperature:
+          type: number
+          format: float
+        humidity:
+          type: number
+          format: float
+        mode:
+          type: string
+          enum: [off, heat, eco]
+    CommandAck:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [acked]
+        correlationId:
+          type: string
+
+
