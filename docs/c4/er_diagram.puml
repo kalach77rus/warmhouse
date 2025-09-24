@@ -1,0 +1,85 @@
+```puml
+@startuml
+title ER Diagram - WarmHouse Domain Model (Flat Telemetry)
+
+entity "User" as User {
+  *id : uuid
+  --
+  first_name : string
+  last_name : string
+  email : string
+  phone : string
+  is_active : bool
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "House" as House {
+  *id : uuid
+  --
+  user_id : uuid
+  address : string
+  description : string
+  is_active : bool
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "Room" as Room {
+  *id : uuid
+  --
+  house_id : uuid
+  name : string
+  floor_number : int
+  room_type_id : int
+}
+
+entity "RoomType" as RoomType {
+  *id : int
+  --
+  name : string
+}
+
+entity "Device" as Device {
+  *id : uuid
+  --
+  serial_number : string
+  connection_string : string
+  description : string
+  device_type_id : int
+  status : int
+  room_id : uuid
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity "DeviceType" as DeviceType {
+  *id : int
+  --
+  parent_id : int
+  is_group : bool
+  name : string
+}
+
+entity "Telemetry" as Telemetry {
+  *id : uuid
+  --
+  device_id : uuid
+  created_at : datetime
+  temperature : float
+  humidity : float
+  power_consumption : float
+  motion_detected : bool
+  light_level : float
+  custom_payload : jsonb <<для нестандартных метрик>>
+}
+
+User ||--o{ House : owns
+House ||--o{ Room : contains
+RoomType ||--o{ Room : categorizes
+Room ||--o{ Device : has
+DeviceType ||--o{ Device : type_of
+Device ||--o{ Telemetry : produces
+
+@enduml
+```
