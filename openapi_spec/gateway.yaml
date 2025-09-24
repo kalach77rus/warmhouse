@@ -1,171 +1,249 @@
 openapi: 3.0.3
 info:
-  title: WarmHouse - Modules Gateway API
-  version: 0.1.0
-  description: API шлюза для модулей умного дома (регистрация, heartbeat, команды, запрос данных, push-телеметрия)
+  title: WarmHouse Gateway API
+  version: 1.0.0
+  description: |
+    Gateway для модулей умного дома. Разделены внешние endpoints для устройств (devices)
+    и внутренние endpoints для межсервисного взаимодействия (internal).
 servers:
-  - url: https://api.example.com/gateway
-paths:
-  /external/modules/register:
-    post:
-      summary: Регистрация модуля
-      operationId: registerModule
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModuleMetadataRequest'
-      responses:
-        '200':
-          description: Успешная регистрация
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RegisterResponse'
-  /external/modules/heartbeat:
-    post:
-      summary: Heartbeat модуля
-      operationId: heartbeat
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModuleMetadataRequest'
-      responses:
-        '200':
-          description: Подтверждение
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HeartbeatResponse'
-  /external/modules/telemetry:
-    post:
-      summary: Push-телеметрия от модулей
-      operationId: pushTelemetry
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModuleTelemetry'
-      responses:
-        '202':
-          description: Принято к обработке
-  /internal/modules/{moduleId}/query:
-    get:
-      summary: Pull-запрос телеметрии у модуля
-      operationId: queryTelemetry
-      parameters:
-        - in: path
-          name: moduleId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Телеметрия
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ModuleTelemetry'
-  /internal/modules/commands:
-    post:
-      summary: Отправка управляющей команды модулю
-      operationId: sendCommand
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ModuleCommand'
-      responses:
-        '200':
-          description: Результат
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CommandResponse'
+  - url: https://api.warmhouse.local
+    description: Production
+  - url: https://staging.api.warmhouse.local
+    description: Staging
+tags:
+  - name: Devices
+    description: Эндпоинты для модулей (устройств) — внешняя зона
+  - name: Internal
+    description: Эндпоинты межсервисного взаимодействия — внутренняя зона
 components:
+  securitySchemes:
+    DeviceTokenAuth:
+      type: apiKey
+      in: header
+      name: X-Device-Token
+      description: Токен устройства (для учебного проекта вместо mTLS)
+    ServiceBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    ModuleId:
+      name: module_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    HouseholdId:
+      name: household_id
+      in: query
+      required: true
+      schema:
+        type: string
+        format: uuid
+  headers:
+    X-Request-Id:
+      description: Идентификатор запроса для трассировки
+      schema:
+        type: string
   schemas:
-    ModuleMetadataRequest:
+    Error:
       type: object
-      required: [moduleId, type, protocol]
+      required: [type, title, status]
       properties:
-        moduleId:
-          type: string
-          format: uuid
-        type:
-          type: string
-          enum: [heat, locks, surveillance, light]
-        protocol:
-          type: string
-          example: HTTP
-        endpoint:
-          type: string
-          format: uri
-        metadata:
-          type: object
-          additionalProperties: true
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer, format: int32 }
+        detail: { type: string }
+        trace_id: { type: string }
+    ModuleRegistrationRequest:
+      type: object
+      required: [module_id, household_id]
+      properties:
+        module_id: { type: string, format: uuid }
+        household_id: { type: string, format: uuid }
+        model: { type: string }
+        protocol: { type: string, description: HTTP или др. }
+        firmware_version: { type: string }
+        capabilities:
+          type: array
+          items: { type: string }
+    ModuleRoute:
+      type: object
+      required: [endpoint]
+      properties:
+        endpoint: { type: string, description: URL для обращения к модулю }
+        last_heartbeat_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
     RegisterResponse:
       type: object
+      required: [module_id, household_id, route]
       properties:
-        accepted:
-          type: boolean
-        credentials:
-          type: object
-          additionalProperties: true
+        module_id: { type: string, format: uuid }
+        household_id: { type: string, format: uuid }
+        route: { $ref: '#/components/schemas/ModuleRoute' }
+    HeartbeatRequest:
+      type: object
+      required: [module_id, household_id]
+      properties:
+        module_id: { type: string, format: uuid }
+        household_id: { type: string, format: uuid }
+        status: { type: string, description: optional device status }
     HeartbeatResponse:
       type: object
+      required: [module_id, household_id, last_heartbeat_at]
       properties:
-        ok:
-          type: boolean
-        nextIntervalSec:
-          type: integer
-    ModuleTelemetry:
+        module_id: { type: string, format: uuid }
+        household_id: { type: string, format: uuid }
+        last_heartbeat_at: { type: string, format: date-time }
+    TelemetryItem:
       type: object
-      required: [moduleId, timestamp, payload]
+      required: [module_id, household_id, ts, payload]
       properties:
-        moduleId:
-          type: string
-          format: uuid
-        timestamp:
-          type: string
-          format: date-time
-        ingestionMethod:
-          type: string
-          enum: [push, pull]
+        module_id: { type: string, format: uuid }
+        household_id: { type: string, format: uuid }
+        ts: { type: string, format: date-time, description: Время на устройстве }
         payload:
           type: object
           additionalProperties: true
-    ModuleCommand:
+    TelemetryBatchRequest:
       type: object
-      required: [moduleId, name]
+      required: [items]
       properties:
-        moduleId:
-          type: string
-          format: uuid
-        name:
-          type: string
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/TelemetryItem' }
+    CommandRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, description: Имя команды }
         params:
           type: object
           additionalProperties: true
-        correlationId:
+        idempotency_key:
           type: string
+          description: Ключ идемпотентности (опционально)
     CommandResponse:
       type: object
+      required: [command_id, status]
       properties:
-        status:
-          type: string
-          enum: [queued, sent, acked, failed]
-        result:
-          type: object
-          additionalProperties: true
-        errorCode:
-          type: string
-        errorMessage:
-          type: string
+        command_id: { type: string, format: uuid }
+        status: { type: string, enum: [queued, sent] }
+paths:
+  /api/v1/devices/modules/register:
+    post:
+      tags: [Devices]
+      summary: Регистрация модуля
+      security: [{ DeviceTokenAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuleRegistrationRequest' }
+      responses:
+        '201':
+          description: Зарегистрировано
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegisterResponse' }
+        '400':
+          description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/devices/modules/heartbeat:
+    post:
+      tags: [Devices]
+      summary: Heartbeat модуля
+      security: [{ DeviceTokenAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/HeartbeatRequest' }
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HeartbeatResponse' }
+        '400':
+          description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/devices/telemetry:
+    post:
+      tags: [Devices]
+      summary: Приём телеметрии (batch поддерживается)
+      security: [{ DeviceTokenAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/TelemetryItem'
+                - $ref: '#/components/schemas/TelemetryBatchRequest'
+      responses:
+        '202':
+          description: Принято к обработке (Kafka)
+          headers:
+            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        '400':
+          description: Ошибка валидации
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/internal/modules/{module_id}/commands:
+    post:
+      tags: [Internal]
+      summary: Отправить команду модулю
+      security: [{ ServiceBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ModuleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CommandRequest' }
+      responses:
+        '202':
+          description: Команда поставлена в очередь/отправлена
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CommandResponse' }
+        '404':
+          description: Маршрут не найден
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/internal/modules/{module_id}/state:
+    get:
+      tags: [Internal]
+      summary: Прочитать состояние модуля (proxy запрос)
+      security: [{ ServiceBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/ModuleId'
+      responses:
+        '200':
+          description: Текущая телеметрия/состояние (формат зависит от типа модуля)
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '404':
+          description: Маршрут не найден
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
 
 

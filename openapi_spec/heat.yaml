@@ -1,114 +1,203 @@
 openapi: 3.0.3
 info:
-  title: WarmHouse - Heat Module Service API
-  version: 0.1.0
-  description: API сервиса отопления. Для BFF/сценариев и для взаимодействия с physical module (если есть прямые вызовы)
+  title: WarmHouse Heat Service API
+  version: 1.0.0
+  description: Сервис отопления — управление режимом и температурой, чтение состояния и телеметрии
 servers:
-  - url: https://api.example.com/heat
-paths:
-  /modules/{moduleId}/telemetry:
-    get:
-      summary: Получить текущую телеметрию отопления
-      operationId: getTelemetry
-      parameters:
-        - in: path
-          name: moduleId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Телеметрия
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HeatTelemetry'
-  /modules/{moduleId}/commands/setpoint:
-    post:
-      summary: Установить целевую температуру
-      operationId: setSetpoint
-      parameters:
-        - in: path
-          name: moduleId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [value]
-              properties:
-                value:
-                  type: number
-                  format: float
-      responses:
-        '200':
-          description: Установлено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CommandAck'
-  /modules/{moduleId}/commands/mode:
-    post:
-      summary: Установить режим (off/heat/eco)
-      operationId: setMode
-      parameters:
-        - in: path
-          name: moduleId
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [mode]
-              properties:
-                mode:
-                  type: string
-                  enum: [off, heat, eco]
-      responses:
-        '200':
-          description: Установлено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CommandAck'
+  - url: https://api.warmhouse.local
+    description: Production
+  - url: https://staging.api.warmhouse.local
+    description: Staging
+tags:
+  - name: Heat
 components:
+  securitySchemes:
+    ServiceBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    HouseholdIdPath:
+      name: household_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    From:
+      name: from
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    To:
+      name: to
+      in: query
+      required: false
+      schema:
+        type: string
+        format: date-time
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
   schemas:
-    HeatTelemetry:
+    Error:
       type: object
+      required: [type, title, status]
       properties:
-        moduleId:
-          type: string
-          format: uuid
-        timestamp:
-          type: string
-          format: date-time
-        temperature:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer, format: int32 }
+        detail: { type: string }
+    HeatMode:
+      type: string
+      enum: [off, auto, manual]
+    HeatState:
+      type: object
+      required: [household_id, mode, target_temperature, current_temperature, valve_position, updated_at]
+      properties:
+        household_id: { type: string, format: uuid }
+        mode: { $ref: '#/components/schemas/HeatMode' }
+        target_temperature:
           type: number
           format: float
-        humidity:
+          minimum: 5
+          maximum: 35
+          description: Целевая температура, °C
+        current_temperature:
           type: number
           format: float
-        mode:
-          type: string
-          enum: [off, heat, eco]
-    CommandAck:
+          minimum: -50
+          maximum: 100
+          description: Текущая температура, °C
+        valve_position:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        updated_at: { type: string, format: date-time }
+    SetModeRequest:
       type: object
+      required: [mode]
       properties:
-        status:
-          type: string
-          enum: [acked]
-        correlationId:
-          type: string
+        mode: { $ref: '#/components/schemas/HeatMode' }
+    SetTemperatureRequest:
+      type: object
+      required: [value_celsius]
+      properties:
+        value_celsius:
+          type: number
+          format: float
+          minimum: 5
+          maximum: 35
+    TelemetryItem:
+      type: object
+      required: [timestamp, temperature, valve_position]
+      properties:
+        timestamp: { type: string, format: date-time }
+        temperature: { type: number, format: float }
+        valve_position: { type: number, format: float, minimum: 0, maximum: 1 }
+    TelemetryResponse:
+      type: object
+      required: [household_id, telemetry]
+      properties:
+        household_id: { type: string, format: uuid }
+        telemetry:
+          type: array
+          items: { $ref: '#/components/schemas/TelemetryItem' }
+paths:
+  /api/v1/heat/households/{household_id}/state:
+    get:
+      tags: [Heat]
+      summary: Текущие показатели отопления
+      security: [{ ServiceBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/HouseholdIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HeatState' }
+        '404':
+          description: Домохозяйство не найдено
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/heat/households/{household_id}/mode:
+    post:
+      tags: [Heat]
+      summary: Установить режим отопления
+      security: [{ ServiceBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/HouseholdIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetModeRequest' }
+      responses:
+        '204':
+          description: Применено
+        '400':
+          description: Ошибка валидации/несоответствие состояния
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/heat/households/{household_id}/target-temperature:
+    post:
+      tags: [Heat]
+      summary: Установить целевую температуру
+      security: [{ ServiceBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/HouseholdIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SetTemperatureRequest' }
+      responses:
+        '204':
+          description: Применено
+        '400':
+          description: Ошибка валидации/диапазона
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
+  /api/v1/heat/households/{household_id}/telemetry:
+    get:
+      tags: [Heat]
+      summary: История телеметрии
+      security: [{ ServiceBearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/HouseholdIdPath'
+        - $ref: '#/components/parameters/From'
+        - $ref: '#/components/parameters/To'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TelemetryResponse' }
+        '404':
+          description: Домохозяйство не найдено
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Error' }
 
 
