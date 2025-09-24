@@ -6,14 +6,18 @@ top to bottom direction
 
 !includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Context.puml
 
-Person(user, "User", "A user of the WarmHouse system")
+Person(user, "User", "Управляет отоплением и смотрит температуру через веб-интерфейс")
+Person(serviceEngineer, "Service Engineer", "Выездной технический специалист, подключает температурные датчики к системе")
 
-System(warmHouseSystem, "WarmHouse System", "Monolith system managing temperature sensors")
+System_Boundary(warmhouse, "WarmHouse System") {
+    System(warmHouseSystem, "WarmHouse Monolith Application", "Монолит на Go + PostgreSQL")
+}
 
-System_Ext(sensor, "Temperature sensors", "Uses REST API, JSON data format")
+System_Ext(sensor, "Temperature Sensors", "Температурные датчики в домах, подключены к системе")
 
-Rel(user, warmHouseSystem, "Uses the system via Web UI")
-Rel(warmHouseSystem,sensor,"Communicates with temperature sensors")
+Rel(user, warmHouseSystem, "Использует для доступа к системе через WebUI")
+Rel(serviceEngineer, warmHouseSystem, "Добавляет и активирует датчики")
+Rel(warmHouseSystem, sensor, "Запрашивает температуру и управляет отоплением")
 
 @enduml
 ```
