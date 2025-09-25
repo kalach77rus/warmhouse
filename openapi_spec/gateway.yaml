@@ -16,16 +16,6 @@ tags:
   - name: Internal
     description: Эндпоинты межсервисного взаимодействия — внутренняя зона
 components:
-  securitySchemes:
-    DeviceTokenAuth:
-      type: apiKey
-      in: header
-      name: X-Device-Token
-      description: Токен устройства (для учебного проекта вместо mTLS)
-    ServiceBearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   parameters:
     ModuleId:
       name: module_id
@@ -135,7 +125,6 @@ paths:
     post:
       tags: [Devices]
       summary: Регистрация модуля
-      security: [{ DeviceTokenAuth: [] }]
       requestBody:
         required: true
         content:
@@ -158,7 +147,6 @@ paths:
     post:
       tags: [Devices]
       summary: Heartbeat модуля
-      security: [{ DeviceTokenAuth: [] }]
       requestBody:
         required: true
         content:
@@ -181,7 +169,6 @@ paths:
     post:
       tags: [Devices]
       summary: Приём телеметрии (batch поддерживается)
-      security: [{ DeviceTokenAuth: [] }]
       requestBody:
         required: true
         content:
@@ -205,7 +192,6 @@ paths:
     post:
       tags: [Internal]
       summary: Отправить команду модулю
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ModuleId'
       requestBody:
@@ -229,7 +215,6 @@ paths:
     get:
       tags: [Internal]
       summary: Прочитать состояние модуля (proxy запрос)
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ModuleId'
       responses:

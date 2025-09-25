@@ -11,11 +11,6 @@ servers:
 tags:
   - name: Scenarios
 components:
-  securitySchemes:
-    ServiceBearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   parameters:
     ScenarioId:
       name: scenario_id
@@ -86,7 +81,6 @@ paths:
     get:
       tags: [Scenarios]
       summary: Поиск сценариев
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/OwnerId'
         - $ref: '#/components/parameters/HouseholdId'
@@ -99,7 +93,6 @@ paths:
     post:
       tags: [Scenarios]
       summary: Создать сценарий
-      security: [{ ServiceBearerAuth: [] }]
       requestBody:
         required: true
         content:
@@ -119,7 +112,6 @@ paths:
     get:
       tags: [Scenarios]
       summary: Получить сценарий
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ScenarioId'
       responses:
@@ -136,7 +128,6 @@ paths:
     put:
       tags: [Scenarios]
       summary: Обновить сценарий
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ScenarioId'
       requestBody:
@@ -155,7 +146,6 @@ paths:
     delete:
       tags: [Scenarios]
       summary: Удалить сценарий
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ScenarioId'
       responses:
@@ -170,7 +160,6 @@ paths:
     post:
       tags: [Scenarios]
       summary: Запустить сценарий
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ScenarioId'
       responses:
@@ -185,7 +174,6 @@ paths:
     post:
       tags: [Scenarios]
       summary: Остановить сценарий
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/ScenarioId'
       responses:

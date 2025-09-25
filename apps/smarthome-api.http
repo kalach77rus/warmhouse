@@ -1,0 +1,134 @@
+@baseUrl = http://localhost:8080
+@temperatureApiUrl = http://localhost:8081
+@host = localhost
+@port = 8080
+@temperaturePort = 8081
+
+### Health Check
+GET {{baseUrl}}/health HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Get All Sensors
+GET {{baseUrl}}/api/v1/sensors HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Get Sensor by ID
+# @name getSensorById
+GET {{baseUrl}}/api/v1/sensors/1 HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Create Sensor
+POST {{baseUrl}}/api/v1/sensors HTTP/1.1
+Host: {{host}}:{{port}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Living Room Temperature",
+    "type": "temperature",
+    "location": "Living Room",
+    "unit": "°C"
+}
+
+### Update Sensor
+PUT {{baseUrl}}/api/v1/sensors/1 HTTP/1.1
+Host: {{host}}:{{port}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "name": "Updated Living Room Temperature",
+    "type": "temperature",
+    "location": "Living Room",
+    "unit": "°C"
+}
+
+### Delete Sensor
+DELETE {{baseUrl}}/api/v1/sensors/1 HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Update Sensor Value
+PATCH {{baseUrl}}/api/v1/sensors/1/value HTTP/1.1
+Host: {{host}}:{{port}}
+Content-Type: application/json
+Accept: application/json
+
+{
+    "value": 22.5,
+    "status": "active"
+}
+
+# ===========================================
+# Temperature API Integration Tests
+# ===========================================
+
+### Get Temperature by Location (via Smart Home API)
+GET {{baseUrl}}/api/v1/sensors/temperature/living-room HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Get Temperature by Location - Kitchen (via Smart Home API)
+GET {{baseUrl}}/api/v1/sensors/temperature/kitchen HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Get Temperature by Location - Yard (via Smart Home API)
+GET {{baseUrl}}/api/v1/sensors/temperature/yard HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+# ===========================================
+# Direct Temperature API Tests
+# ===========================================
+
+### Direct Temperature API Health Check
+GET {{temperatureApiUrl}}/temperature?location=test HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+### Direct Temperature API - Living Room
+GET {{temperatureApiUrl}}/temperature?location=living-room HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+### Direct Temperature API - Kitchen
+GET {{temperatureApiUrl}}/temperature?location=kitchen HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+### Direct Temperature API - Yard
+GET {{temperatureApiUrl}}/temperature?location=yard HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+### Direct Temperature API - Bedroom
+GET {{temperatureApiUrl}}/temperature?location=bedroom HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+### Direct Temperature API - Default Location
+GET {{temperatureApiUrl}}/temperature HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+# ===========================================
+# Temperature API Response Validation
+# ===========================================
+
+### Test Temperature API Response Format
+# @name temperatureResponse
+GET {{temperatureApiUrl}}/temperature?location=test-location HTTP/1.1
+Host: {{host}}:{{temperaturePort}}
+Accept: application/json
+
+### Verify Temperature API Response Structure
+# Expected response format:
+# {
+#   "location": "test-location",
+#   "value": 21.3,
+#   "unit": "C"
+# }

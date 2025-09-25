@@ -11,11 +11,6 @@ servers:
 tags:
   - name: Heat
 components:
-  securitySchemes:
-    ServiceBearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   parameters:
     HouseholdIdPath:
       name: household_id
@@ -123,7 +118,6 @@ paths:
     get:
       tags: [Heat]
       summary: Текущие показатели отопления
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/HouseholdIdPath'
       responses:
@@ -141,7 +135,6 @@ paths:
     post:
       tags: [Heat]
       summary: Установить режим отопления
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/HouseholdIdPath'
       requestBody:
@@ -161,7 +154,6 @@ paths:
     post:
       tags: [Heat]
       summary: Установить целевую температуру
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/HouseholdIdPath'
       requestBody:
@@ -181,7 +173,6 @@ paths:
     get:
       tags: [Heat]
       summary: История телеметрии
-      security: [{ ServiceBearerAuth: [] }]
       parameters:
         - $ref: '#/components/parameters/HouseholdIdPath'
         - $ref: '#/components/parameters/From'
