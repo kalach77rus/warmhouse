@@ -77,6 +77,7 @@ services:
     environment:
       - GATEWAY_URL=http://modules-gateway:8083
       - MODULE_HOME_ID=default-home
+      - MODULE_ID=temperature-module-factory-001
     depends_on:
       - modules-gateway
     restart: unless-stopped

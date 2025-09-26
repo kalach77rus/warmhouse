@@ -7,16 +7,16 @@ Content-Type: application/json
 
 ###
 
-### 2. Register Temperature Module
+### 2. Register Temperature Module (Factory ID)
 POST http://localhost:8083/api/v1/modules/register
 Content-Type: application/json
 
 {
-  "moduleId": "temperature-module-test-001",
+  "moduleId": "temperature-module-factory-001",
   "moduleType": "TEMPERATURE",
   "homeId": "test-home-001",
   "baseUrl": "http://temperature-api:8081",
-  "description": "Test temperature sensor module"
+  "description": "Factory temperature sensor module"
 }
 
 ###
@@ -26,11 +26,11 @@ POST http://localhost:8083/api/v1/modules/register
 Content-Type: application/json
 
 {
-  "moduleId": "temperature-module-test-002",
+  "moduleId": "temperature-module-factory-002",
   "moduleType": "TEMPERATURE",
   "homeId": "test-home-002",
   "baseUrl": "http://temperature-api-2:8081",
-  "description": "Test temperature sensor module for home 2"
+  "description": "Factory temperature sensor module for home 2"
 }
 
 ###
@@ -40,11 +40,11 @@ POST http://localhost:8083/api/v1/modules/register
 Content-Type: application/json
 
 {
-  "moduleId": "locks-module-test-001",
+  "moduleId": "locks-module-factory-001",
   "moduleType": "LOCKS",
   "homeId": "test-home-001",
   "baseUrl": "http://locks-api:8081",
-  "description": "Test locks module"
+  "description": "Factory locks module"
 }
 
 ###
@@ -54,23 +54,23 @@ POST http://localhost:8083/api/v1/modules/register
 Content-Type: application/json
 
 {
-  "moduleId": "lighting-module-test-001",
+  "moduleId": "lighting-module-factory-001",
   "moduleType": "LIGHTING",
   "homeId": "test-home-001",
   "baseUrl": "http://lighting-api:8081",
-  "description": "Test lighting module"
+  "description": "Factory lighting module"
 }
 
 ###
 
 ### 6. Update Heartbeat for Temperature Module
-POST http://localhost:8083/api/v1/modules/temperature-module-test-001/heartbeat?homeId=test-home-001
+POST http://localhost:8083/api/v1/modules/temperature-module-factory-001/heartbeat?homeId=test-home-001
 Content-Type: application/json
 
 ###
 
 ### 7. Update Heartbeat for Locks Module
-POST http://localhost:8083/api/v1/modules/locks-module-test-001/heartbeat?homeId=test-home-001
+POST http://localhost:8083/api/v1/modules/locks-module-factory-001/heartbeat?homeId=test-home-001
 Content-Type: application/json
 
 ###
@@ -196,8 +196,36 @@ Content-Type: application/json
 ###
 
 ### 23. Test Multiple Heartbeats (Simulate Real Usage)
-POST http://localhost:8083/api/v1/modules/temperature-module-test-002/heartbeat?homeId=test-home-002
+POST http://localhost:8083/api/v1/modules/temperature-module-factory-002/heartbeat?homeId=test-home-002
 Content-Type: application/json
+
+###
+
+### 23.1. Test Invalid Module ID Format
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "invalid-id",
+  "moduleType": "TEMPERATURE",
+  "homeId": "test-home-001",
+  "baseUrl": "http://invalid-api:8081",
+  "description": "Module with invalid ID format"
+}
+
+###
+
+### 23.2. Test Valid Factory Module ID
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "surveillance-module-factory-123",
+  "moduleType": "SURVEILLANCE",
+  "homeId": "test-home-001",
+  "baseUrl": "http://surveillance-api:8081",
+  "description": "Valid factory surveillance module"
+}
 
 ###
 
@@ -219,4 +247,75 @@ Content-Type: application/json
 GET http://localhost:8083/api/v1/modules
 Content-Type: application/json
 
-##
+###
+
+### 26. Proxy GET Request to Temperature Module
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=kitchen
+Content-Type: application/json
+
+###
+
+### 27. Proxy GET Request to Temperature Module (Different Location)
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=bedroom
+Content-Type: application/json
+
+###
+
+### 28. Proxy GET Request to Temperature Module (Root Path)
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/
+Content-Type: application/json
+
+###
+
+### 29. Proxy POST Request to Temperature Module
+POST http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature
+Content-Type: application/json
+
+{
+  "location": "kitchen",
+  "action": "set_target",
+  "target_temp": 22.5
+}
+
+###
+
+### 30. Test Security - Try to Access Secret Path
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/secret/data
+Content-Type: application/json
+
+###
+
+### 31. Test Security - Try to Access Secret Path (Different Module)
+GET http://localhost:8083/api/v1/modules/locks-module-factory-001/proxy/secret/admin
+Content-Type: application/json
+
+###
+
+### 32. Proxy Request to Non-existent Module
+GET http://localhost:8083/api/v1/modules/non-existent-module/proxy/temperature
+Content-Type: application/json
+
+###
+
+### 33. Proxy Request with Custom Headers
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=kitchen
+Content-Type: application/json
+X-Custom-Header: test-value
+Authorization: Bearer test-token
+User-Agent: Gateway-Proxy-Test
+
+###
+
+### 34. Proxy POST Request with Custom Headers
+POST http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature
+Content-Type: application/json
+X-Custom-Header: test-value
+Authorization: Bearer test-token
+
+{
+  "location": "kitchen",
+  "action": "set_target",
+  "target_temp": 22.5
+}
+
+###

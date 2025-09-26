@@ -23,6 +23,9 @@ public class ModuleRegistrationService {
     @Transactional
     public ModuleRegistrationResponse registerModule(ModuleRegistrationRequest request) {
         try {
+            // Validate module ID format (should be factory-assigned)
+            validateModuleId(request.getModuleId());
+            
             // Check if module is already registered
             Optional<ModuleRegistration> existing = repository.findByModuleIdAndHomeId(
                 request.getModuleId(), 
@@ -114,5 +117,25 @@ public class ModuleRegistrationService {
         } catch (Exception e) {
             log.error("Error unregistering module {}: {}", moduleId, e.getMessage(), e);
         }
+    }
+    
+    private void validateModuleId(String moduleId) {
+        if (moduleId == null || moduleId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Module ID cannot be null or empty");
+        }
+        
+        // Validate that module ID follows factory-assigned format
+        // Expected format: {module-type}-module-factory-{number}
+        if (!moduleId.matches("^[a-zA-Z0-9-]+-module-factory-\\d+$")) {
+            log.warn("Module ID '{}' does not follow expected factory format", moduleId);
+            // We don't throw exception here, just log warning to allow flexibility
+        }
+        
+        // Check for minimum length
+        if (moduleId.length() < 10) {
+            throw new IllegalArgumentException("Module ID must be at least 10 characters long");
+        }
+        
+        log.debug("Module ID validation passed for: {}", moduleId);
     }
 }

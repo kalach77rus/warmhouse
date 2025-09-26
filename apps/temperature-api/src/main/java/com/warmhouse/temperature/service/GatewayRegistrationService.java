@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import jakarta.annotation.PostConstruct;
-import java.util.UUID;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 
 @Service
 @RequiredArgsConstructor
@@ -30,20 +31,24 @@ public class GatewayRegistrationService {
     @Value("${module.home.id:default-home}")
     private String homeId;
     
+    @Value("${module.id:temperature-module-factory-001}")
+    private String moduleId;
+    
     @Value("${server.port:8081}")
     private String serverPort;
     
-    private String moduleId;
     private String baseUrl;
     
     @PostConstruct
     public void init() {
-        this.moduleId = "temperature-module-" + UUID.randomUUID().toString().substring(0, 8);
         this.baseUrl = "http://temperature-api:" + serverPort;
         
-        log.info("Initializing temperature module with ID: {} and URL: {}", moduleId, baseUrl);
-        
-        // Start registration process asynchronously
+        log.info("Initializing temperature module with factory ID: {} and URL: {}", moduleId, baseUrl);
+    }
+    
+    @EventListener(ApplicationReadyEvent.class)
+    public void onApplicationReady() {
+        log.info("Application is ready, starting gateway registration...");
         registerWithGateway();
     }
     
