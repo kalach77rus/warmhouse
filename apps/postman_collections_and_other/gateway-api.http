@@ -1,0 +1,222 @@
+### Gateway API Test Requests
+### Base URL: http://localhost:8083
+
+### 1. Health Check - Test Gateway Availability
+GET http://localhost:8083/api/v1/internal/test
+Content-Type: application/json
+
+###
+
+### 2. Register Temperature Module
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "temperature-module-test-001",
+  "moduleType": "TEMPERATURE",
+  "homeId": "test-home-001",
+  "baseUrl": "http://temperature-api:8081",
+  "description": "Test temperature sensor module"
+}
+
+###
+
+### 3. Register Another Temperature Module (Different Home)
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "temperature-module-test-002",
+  "moduleType": "TEMPERATURE",
+  "homeId": "test-home-002",
+  "baseUrl": "http://temperature-api-2:8081",
+  "description": "Test temperature sensor module for home 2"
+}
+
+###
+
+### 4. Register Locks Module
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "locks-module-test-001",
+  "moduleType": "LOCKS",
+  "homeId": "test-home-001",
+  "baseUrl": "http://locks-api:8081",
+  "description": "Test locks module"
+}
+
+###
+
+### 5. Register Lighting Module
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "lighting-module-test-001",
+  "moduleType": "LIGHTING",
+  "homeId": "test-home-001",
+  "baseUrl": "http://lighting-api:8081",
+  "description": "Test lighting module"
+}
+
+###
+
+### 6. Update Heartbeat for Temperature Module
+POST http://localhost:8083/api/v1/modules/temperature-module-test-001/heartbeat?homeId=test-home-001
+Content-Type: application/json
+
+###
+
+### 7. Update Heartbeat for Locks Module
+POST http://localhost:8083/api/v1/modules/locks-module-test-001/heartbeat?homeId=test-home-001
+Content-Type: application/json
+
+###
+
+### 8. Get All Registered Modules
+GET http://localhost:8083/api/v1/modules
+Content-Type: application/json
+
+###
+
+### 9. Get Modules by Home ID
+GET http://localhost:8083/api/v1/modules/home/test-home-001
+Content-Type: application/json
+
+###
+
+### 10. Get Modules by Home ID (Different Home)
+GET http://localhost:8083/api/v1/modules/home/test-home-002
+Content-Type: application/json
+
+###
+
+### 11. Get Modules by Type (Temperature)
+GET http://localhost:8083/api/v1/modules/type/TEMPERATURE
+Content-Type: application/json
+
+###
+
+### 12. Get Modules by Type (Locks)
+GET http://localhost:8083/api/v1/modules/type/LOCKS
+Content-Type: application/json
+
+###
+
+### 13. Get Modules by Type (Lighting)
+GET http://localhost:8083/api/v1/modules/type/LIGHTING
+Content-Type: application/json
+
+###
+
+### 14. Update Module Registration (Same Module ID and Home)
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "temperature-module-test-001",
+  "moduleType": "TEMPERATURE",
+  "homeId": "test-home-001",
+  "baseUrl": "http://temperature-api-updated:8081",
+  "description": "Updated temperature sensor module"
+}
+
+###
+
+### 15. Test Invalid Registration (Missing Fields)
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "invalid-module",
+  "moduleType": "TEMPERATURE"
+  // Missing homeId, baseUrl, description
+}
+
+###
+
+### 16. Test Heartbeat for Non-existent Module
+POST http://localhost:8083/api/v1/modules/non-existent-module/heartbeat?homeId=test-home-001
+Content-Type: application/json
+
+###
+
+### 17. Test Heartbeat with Wrong Home ID
+POST http://localhost:8083/api/v1/modules/temperature-module-test-001/heartbeat?homeId=wrong-home-id
+Content-Type: application/json
+
+###
+
+### 18. Unregister Temperature Module
+DELETE http://localhost:8083/api/v1/modules/temperature-module-test-001?homeId=test-home-001
+Content-Type: application/json
+
+###
+
+### 19. Unregister Locks Module
+DELETE http://localhost:8083/api/v1/modules/locks-module-test-001?homeId=test-home-001
+Content-Type: application/json
+
+###
+
+### 20. Verify Modules After Unregistration
+GET http://localhost:8083/api/v1/modules/home/test-home-001
+Content-Type: application/json
+
+###
+
+### 21. Test Registration with Special Characters
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "module-with-special-chars-!@#$%",
+  "moduleType": "TEMPERATURE",
+  "homeId": "home-with-ümlauts",
+  "baseUrl": "http://special-api:8081",
+  "description": "Module with special characters: !@#$%^&*()"
+}
+
+###
+
+### 22. Test Long Description
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "module-with-long-description",
+  "moduleType": "TEMPERATURE",
+  "homeId": "test-home-001",
+  "baseUrl": "http://long-desc-api:8081",
+  "description": "This is a very long description that contains multiple sentences and should test the database field limits. It includes various characters like numbers 123, symbols !@#, and unicode characters like émojis 🏠🌡️. The description should be able to handle all kinds of text content without issues."
+}
+
+###
+
+### 23. Test Multiple Heartbeats (Simulate Real Usage)
+POST http://localhost:8083/api/v1/modules/temperature-module-test-002/heartbeat?homeId=test-home-002
+Content-Type: application/json
+
+###
+
+### 24. Test Registration with Different Module Types
+POST http://localhost:8083/api/v1/modules/register
+Content-Type: application/json
+
+{
+  "moduleId": "surveillance-module-test-001",
+  "moduleType": "SURVEILLANCE",
+  "homeId": "test-home-001",
+  "baseUrl": "http://surveillance-api:8081",
+  "description": "Test surveillance module"
+}
+
+###
+
+### 25. Final Status Check - All Modules
+GET http://localhost:8083/api/v1/modules
+Content-Type: application/json
+
+###

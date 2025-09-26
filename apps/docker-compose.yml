@@ -45,6 +45,9 @@ services:
       - DB_PASSWORD=postgres
       - DB_USER=postgres
       - DB_URL=jdbc:postgresql://postgres:5432/smarthome
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - smarthome-network
@@ -71,6 +74,11 @@ services:
     container_name: temperature-api
     ports:
       - "8081:8081"
+    environment:
+      - GATEWAY_URL=http://modules-gateway:8083
+      - MODULE_HOME_ID=default-home
+    depends_on:
+      - modules-gateway
     restart: unless-stopped
     networks:
       - smarthome-network
