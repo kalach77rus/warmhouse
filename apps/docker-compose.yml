@@ -19,6 +19,51 @@ services:
     networks:
       - smarthome-network
 
+  heat-service:
+    build:
+      context: ./heat-service
+      dockerfile: Dockerfile
+    container_name: heat-service
+    ports:
+      - "8082:8082"
+    environment:
+      - DB_PASSWORD=postgres
+      - DB_USER=postgres
+      - DB_URL=jdbc:postgresql://postgres:5432/smarthome
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
+  modules-gateway:
+    build:
+      context: ./modules-gateway
+      dockerfile: Dockerfile
+    container_name: modules-gateway
+    ports:
+      - "8083:8083"
+    environment:
+      - DB_PASSWORD=postgres
+      - DB_USER=postgres
+      - DB_URL=jdbc:postgresql://postgres:5432/smarthome
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
+  scenario-service:
+    build:
+      context: ./scenario-service
+      dockerfile: Dockerfile
+    container_name: scenario-service 
+    ports:
+      - "8085:8085"
+    environment:
+      - DB_PASSWORD=postgres
+      - DB_USER=postgres
+      - DB_URL=jdbc:postgresql://postgres:5432/smarthome
+    restart: unless-stopped
+    networks:
+      - smarthome-network
+
   temperature-api:
     build:
       context: ./temperature-api

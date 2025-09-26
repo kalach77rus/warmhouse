@@ -1,8 +1,24 @@
 @baseUrl = http://localhost:8080
 @temperatureApiUrl = http://localhost:8081
+@heatServiceUrl = http://localhost:8082
 @host = localhost
 @port = 8080
 @temperaturePort = 8081
+
+### Heat service check
+GET {{heatServiceUrl}}/api/v1/test/ HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Gateway check
+GET http://localhost:8083/api/v1/internal/test HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
+
+### Scenario service check
+GET http://localhost:8085/api/v1/scenarios/ HTTP/1.1
+Host: {{host}}:{{port}}
+Accept: application/json
 
 ### Health Check
 GET {{baseUrl}}/health HTTP/1.1
