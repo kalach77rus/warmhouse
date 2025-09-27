@@ -16,5 +16,5 @@ GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/te
 Content-Type: application/json
 
 ### 4
-GET http://modules-gateway:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=living-room
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=living-room
 Content-Type: application/json

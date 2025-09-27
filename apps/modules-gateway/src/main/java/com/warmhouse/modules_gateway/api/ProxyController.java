@@ -27,6 +27,12 @@ public class ProxyController {
         log.info("Proxying GET request to module {}: {}", moduleId, request.getRequestURI());
         
         String targetPath = extractTargetPath(request.getRequestURI(), moduleId);
+        String queryString = request.getQueryString();
+        
+        // Добавляем query параметры к пути, если они есть
+        if (queryString != null && !queryString.isEmpty()) {
+            targetPath += "?" + queryString;
+        }
         
         return proxyService.proxyRequest(moduleId, HttpMethod.GET, targetPath, null, null);
     }
@@ -40,8 +46,70 @@ public class ProxyController {
         log.info("Proxying POST request to module {}: {}", moduleId, request.getRequestURI());
         
         String targetPath = extractTargetPath(request.getRequestURI(), moduleId);
+        String queryString = request.getQueryString();
+        
+        // Добавляем query параметры к пути, если они есть
+        if (queryString != null && !queryString.isEmpty()) {
+            targetPath += "?" + queryString;
+        }
         
         return proxyService.proxyRequest(moduleId, HttpMethod.POST, targetPath, null, body);
+    }
+    
+    @PutMapping("/{moduleId}/proxy/**")
+    public ResponseEntity<String> proxyPut(
+            @PathVariable String moduleId,
+            @RequestBody(required = false) String body,
+            HttpServletRequest request) {
+        
+        log.info("Proxying PUT request to module {}: {}", moduleId, request.getRequestURI());
+        
+        String targetPath = extractTargetPath(request.getRequestURI(), moduleId);
+        String queryString = request.getQueryString();
+        
+        // Добавляем query параметры к пути, если они есть
+        if (queryString != null && !queryString.isEmpty()) {
+            targetPath += "?" + queryString;
+        }
+        
+        return proxyService.proxyRequest(moduleId, HttpMethod.PUT, targetPath, null, body);
+    }
+    
+    @DeleteMapping("/{moduleId}/proxy/**")
+    public ResponseEntity<String> proxyDelete(
+            @PathVariable String moduleId,
+            HttpServletRequest request) {
+        
+        log.info("Proxying DELETE request to module {}: {}", moduleId, request.getRequestURI());
+        
+        String targetPath = extractTargetPath(request.getRequestURI(), moduleId);
+        String queryString = request.getQueryString();
+        
+        // Добавляем query параметры к пути, если они есть
+        if (queryString != null && !queryString.isEmpty()) {
+            targetPath += "?" + queryString;
+        }
+        
+        return proxyService.proxyRequest(moduleId, HttpMethod.DELETE, targetPath, null, null);
+    }
+    
+    @PatchMapping("/{moduleId}/proxy/**")
+    public ResponseEntity<String> proxyPatch(
+            @PathVariable String moduleId,
+            @RequestBody(required = false) String body,
+            HttpServletRequest request) {
+        
+        log.info("Proxying PATCH request to module {}: {}", moduleId, request.getRequestURI());
+        
+        String targetPath = extractTargetPath(request.getRequestURI(), moduleId);
+        String queryString = request.getQueryString();
+        
+        // Добавляем query параметры к пути, если они есть
+        if (queryString != null && !queryString.isEmpty()) {
+            targetPath += "?" + queryString;
+        }
+        
+        return proxyService.proxyRequest(moduleId, HttpMethod.PATCH, targetPath, null, body);
     }
     
     private String extractTargetPath(String requestUri, String moduleId) {
