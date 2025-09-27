@@ -1,194 +1,272 @@
 openapi: 3.0.3
 info:
-  title: WarmHouse Heat Service API
+  title: Heat Service API
+  description: |
+    API для управления системой отопления в умном доме.
+    Сервис предоставляет возможности управления режимами отопления, 
+    установки целевой температуры и получения текущего состояния системы.
   version: 1.0.0
-  description: Сервис отопления — управление режимом и температурой, чтение состояния и телеметрии
+  contact:
+    name: WarmHouse Team
+    email: support@warmhouse.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
 servers:
-  - url: https://api.warmhouse.local
-    description: Production
-  - url: https://staging.api.warmhouse.local
-    description: Staging
+  - url: http://localhost:8082
+    description: Локальный сервер разработки
+  - url: http://heat-service:8082
+    description: Сервер в Docker контейнере
+
 tags:
-  - name: Heat
+  - name: Commands
+    description: Управление системой отопления
+  - name: Data
+    description: Получение данных о состоянии системы
+
+paths:
+  /api/v1/heat/commands/mode:
+    post:
+      tags:
+        - Commands
+      summary: Установить режим отопления
+      description: |
+        Устанавливает режим работы системы отопления для указанного устройства.
+        Поддерживаемые режимы: AUTO (автоматический), MANUAL (ручной), OFF (выключено).
+      operationId: setHeatMode
+      parameters:
+        - name: deviceId
+          in: query
+          required: true
+          description: Идентификатор устройства отопления
+          schema:
+            type: string
+            example: "heat_module_001"
+        - name: mode
+          in: query
+          required: true
+          description: Режим работы отопления
+          schema:
+            type: string
+            enum: [AUTO, MANUAL, OFF]
+            example: "AUTO"
+      responses:
+        '200':
+          description: Режим успешно установлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Heat mode set to AUTO"
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/heat/commands/temperature:
+    post:
+      tags:
+        - Commands
+      summary: Установить целевую температуру
+      description: |
+        Устанавливает целевую температуру для системы отопления.
+        Температура указывается в градусах Цельсия.
+      operationId: setTargetTemperature
+      parameters:
+        - name: deviceId
+          in: query
+          required: true
+          description: Идентификатор устройства отопления
+          schema:
+            type: string
+            example: "heat_module_001"
+        - name: temperature
+          in: query
+          required: true
+          description: Целевая температура в градусах Цельсия
+          schema:
+            type: number
+            format: double
+            minimum: 5.0
+            maximum: 35.0
+            example: 22.5
+      responses:
+        '200':
+          description: Целевая температура успешно установлена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Target temperature set to 22.5°C"
+        '400':
+          description: Неверные параметры запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/heat/state/{deviceId}:
+    get:
+      tags:
+        - Data
+      summary: Получить текущее состояние отопления
+      description: |
+        Возвращает текущее состояние системы отопления для указанного устройства,
+        включая текущую и целевую температуру, режим работы и статус.
+      operationId: getHeatState
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          description: Идентификатор устройства отопления
+          schema:
+            type: string
+            example: "heat_module_001"
+      responses:
+        '200':
+          description: Состояние системы отопления
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeatState'
+        '404':
+          description: Устройство не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/heat/test:
+    get:
+      tags:
+        - Data
+      summary: Проверка работоспособности сервиса
+      description: |
+        Простая проверка работоспособности сервиса отопления.
+        Возвращает статусное сообщение.
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Сервис работает
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "Heat Service is running!"
+
 components:
-  parameters:
-    HouseholdIdPath:
-      name: household_id
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    From:
-      name: from
-      in: query
-      required: false
-      schema:
-        type: string
-        format: date-time
-    To:
-      name: to
-      in: query
-      required: false
-      schema:
-        type: string
-        format: date-time
-    Page:
-      name: page
-      in: query
-      required: false
-      schema:
-        type: integer
-        minimum: 0
-    Size:
-      name: size
-      in: query
-      required: false
-      schema:
-        type: integer
-        minimum: 1
-        maximum: 1000
   schemas:
-    Error:
-      type: object
-      required: [type, title, status]
-      properties:
-        type: { type: string }
-        title: { type: string }
-        status: { type: integer, format: int32 }
-        detail: { type: string }
-    HeatMode:
-      type: string
-      enum: [off, auto, manual]
     HeatState:
       type: object
-      required: [household_id, mode, target_temperature, current_temperature, valve_position, updated_at]
+      description: Состояние системы отопления
+      required:
+        - deviceId
+        - currentTemperature
+        - targetTemperature
+        - mode
+        - heatingEnabled
+        - status
       properties:
-        household_id: { type: string, format: uuid }
-        mode: { $ref: '#/components/schemas/HeatMode' }
-        target_temperature:
+        deviceId:
+          type: string
+          description: Идентификатор устройства отопления
+          example: "heat_module_001"
+        currentTemperature:
           type: number
-          format: float
-          minimum: 5
-          maximum: 35
-          description: Целевая температура, °C
-        current_temperature:
+          format: double
+          description: Текущая температура в градусах Цельсия
+          example: 21.5
+        targetTemperature:
           type: number
-          format: float
-          minimum: -50
-          maximum: 100
-          description: Текущая температура, °C
-        valve_position:
-          type: number
-          format: float
-          minimum: 0
-          maximum: 1
-        updated_at: { type: string, format: date-time }
-    SetModeRequest:
+          format: double
+          description: Целевая температура в градусах Цельсия
+          example: 22.0
+        mode:
+          type: string
+          description: Режим работы отопления
+          enum: [AUTO, MANUAL, OFF]
+          example: "AUTO"
+        heatingEnabled:
+          type: boolean
+          description: Включено ли отопление
+          example: true
+        status:
+          type: string
+          description: Статус системы отопления
+          enum: [ACTIVE, INACTIVE, ERROR]
+          example: "ACTIVE"
+
+    ErrorResponse:
       type: object
-      required: [mode]
+      description: Ответ об ошибке
+      required:
+        - error
+        - message
       properties:
-        mode: { $ref: '#/components/schemas/HeatMode' }
-    SetTemperatureRequest:
-      type: object
-      required: [value_celsius]
-      properties:
-        value_celsius:
-          type: number
-          format: float
-          minimum: 5
-          maximum: 35
-    TelemetryItem:
-      type: object
-      required: [timestamp, temperature, valve_position]
-      properties:
-        timestamp: { type: string, format: date-time }
-        temperature: { type: number, format: float }
-        valve_position: { type: number, format: float, minimum: 0, maximum: 1 }
-    TelemetryResponse:
-      type: object
-      required: [household_id, telemetry]
-      properties:
-        household_id: { type: string, format: uuid }
-        telemetry:
-          type: array
-          items: { $ref: '#/components/schemas/TelemetryItem' }
-paths:
-  /api/v1/heat/households/{household_id}/state:
-    get:
-      tags: [Heat]
-      summary: Текущие показатели отопления
-      parameters:
-        - $ref: '#/components/parameters/HouseholdIdPath'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/HeatState' }
-        '404':
-          description: Домохозяйство не найдено
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-  /api/v1/heat/households/{household_id}/mode:
-    post:
-      tags: [Heat]
-      summary: Установить режим отопления
-      parameters:
-        - $ref: '#/components/parameters/HouseholdIdPath'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/SetModeRequest' }
-      responses:
-        '204':
-          description: Применено
-        '400':
-          description: Ошибка валидации/несоответствие состояния
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-  /api/v1/heat/households/{household_id}/target-temperature:
-    post:
-      tags: [Heat]
-      summary: Установить целевую температуру
-      parameters:
-        - $ref: '#/components/parameters/HouseholdIdPath'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/SetTemperatureRequest' }
-      responses:
-        '204':
-          description: Применено
-        '400':
-          description: Ошибка валидации/диапазона
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-  /api/v1/heat/households/{household_id}/telemetry:
-    get:
-      tags: [Heat]
-      summary: История телеметрии
-      parameters:
-        - $ref: '#/components/parameters/HouseholdIdPath'
-        - $ref: '#/components/parameters/From'
-        - $ref: '#/components/parameters/To'
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/TelemetryResponse' }
-        '404':
-          description: Домохозяйство не найдено
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
+        error:
+          type: string
+          description: Тип ошибки
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          description: Описание ошибки
+          example: "Invalid temperature value"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00Z"
+        path:
+          type: string
+          description: Путь запроса, вызвавшего ошибку
+          example: "/api/v1/heat/commands/temperature"
 
 
+externalDocs:
+  description: Документация системы WarmHouse
+  url: https://docs.warmhouse.com

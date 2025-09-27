@@ -56,21 +56,6 @@ services:
     networks:
       - smarthome-network
 
-  scenario-service:
-    build:
-      context: ./scenario-service
-      dockerfile: Dockerfile
-    container_name: scenario-service 
-    ports:
-      - "8085:8085"
-    environment:
-      - DB_PASSWORD=postgres
-      - DB_USER=postgres
-      - DB_URL=jdbc:postgresql://postgres:5432/smarthome
-    restart: unless-stopped
-    networks:
-      - smarthome-network
-
   temperature-api:
     build:
       context: ./temperature-api

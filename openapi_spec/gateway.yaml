@@ -3,18 +3,19 @@ info:
   title: WarmHouse Gateway API
   version: 1.0.0
   description: |
-    Gateway для модулей умного дома. Разделены внешние endpoints для устройств (devices)
-    и внутренние endpoints для межсервисного взаимодействия (internal).
+    Gateway для модулей умного дома. Управление регистрацией модулей и проксирование запросов.
 servers:
+  - url: http://modules-gateway:8083
+    description: Development
   - url: https://api.warmhouse.local
     description: Production
-  - url: https://staging.api.warmhouse.local
-    description: Staging
 tags:
-  - name: Devices
-    description: Эндпоинты для модулей (устройств) — внешняя зона
+  - name: Modules
+    description: Управление модулями умного дома
+  - name: Proxy
+    description: Проксирование запросов к модулям
   - name: Internal
-    description: Эндпоинты межсервисного взаимодействия — внутренняя зона
+    description: Внутренние эндпоинты
 components:
   parameters:
     ModuleId:
@@ -48,82 +49,37 @@ components:
         trace_id: { type: string }
     ModuleRegistrationRequest:
       type: object
-      required: [module_id, household_id]
+      required: [moduleId, moduleType, homeId, baseUrl]
       properties:
-        module_id: { type: string, format: uuid }
-        household_id: { type: string, format: uuid }
-        model: { type: string }
-        protocol: { type: string, description: HTTP или др. }
-        firmware_version: { type: string }
-        capabilities:
-          type: array
-          items: { type: string }
-    ModuleRoute:
+        moduleId: { type: string, description: ID модуля }
+        moduleType: { type: string, description: Тип модуля }
+        homeId: { type: string, description: ID дома }
+        baseUrl: { type: string, description: Базовый URL модуля }
+        description: { type: string, description: Описание модуля }
+    ModuleRegistrationResponse:
       type: object
-      required: [endpoint]
+      required: [success, message, moduleId]
       properties:
-        endpoint: { type: string, description: URL для обращения к модулю }
-        last_heartbeat_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
-    RegisterResponse:
+        success: { type: boolean }
+        message: { type: string }
+        moduleId: { type: string }
+    ModuleRegistration:
       type: object
-      required: [module_id, household_id, route]
+      required: [id, moduleId, moduleType, homeId, baseUrl, status, registeredAt]
       properties:
-        module_id: { type: string, format: uuid }
-        household_id: { type: string, format: uuid }
-        route: { $ref: '#/components/schemas/ModuleRoute' }
-    HeartbeatRequest:
-      type: object
-      required: [module_id, household_id]
-      properties:
-        module_id: { type: string, format: uuid }
-        household_id: { type: string, format: uuid }
-        status: { type: string, description: optional device status }
-    HeartbeatResponse:
-      type: object
-      required: [module_id, household_id, last_heartbeat_at]
-      properties:
-        module_id: { type: string, format: uuid }
-        household_id: { type: string, format: uuid }
-        last_heartbeat_at: { type: string, format: date-time }
-    TelemetryItem:
-      type: object
-      required: [module_id, household_id, ts, payload]
-      properties:
-        module_id: { type: string, format: uuid }
-        household_id: { type: string, format: uuid }
-        ts: { type: string, format: date-time, description: Время на устройстве }
-        payload:
-          type: object
-          additionalProperties: true
-    TelemetryBatchRequest:
-      type: object
-      required: [items]
-      properties:
-        items:
-          type: array
-          items: { $ref: '#/components/schemas/TelemetryItem' }
-    CommandRequest:
-      type: object
-      required: [name]
-      properties:
-        name: { type: string, description: Имя команды }
-        params:
-          type: object
-          additionalProperties: true
-        idempotency_key:
-          type: string
-          description: Ключ идемпотентности (опционально)
-    CommandResponse:
-      type: object
-      required: [command_id, status]
-      properties:
-        command_id: { type: string, format: uuid }
-        status: { type: string, enum: [queued, sent] }
+        id: { type: integer, format: int64 }
+        moduleId: { type: string }
+        moduleType: { type: string }
+        homeId: { type: string }
+        baseUrl: { type: string }
+        status: { type: string }
+        registeredAt: { type: string, format: date-time }
+        lastHeartbeat: { type: string, format: date-time }
+        description: { type: string }
 paths:
-  /api/v1/devices/modules/register:
+  /api/v1/modules/register:
     post:
-      tags: [Devices]
+      tags: [Modules]
       summary: Регистрация модуля
       requestBody:
         required: true
@@ -131,104 +87,247 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/ModuleRegistrationRequest' }
       responses:
-        '201':
-          description: Зарегистрировано
-          headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+        '200':
+          description: Успешная регистрация
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/RegisterResponse' }
+              schema: { $ref: '#/components/schemas/ModuleRegistrationResponse' }
         '400':
           description: Ошибка валидации
           content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-  /api/v1/devices/modules/heartbeat:
+            application/json:
+              schema: { $ref: '#/components/schemas/ModuleRegistrationResponse' }
+  
+  /api/v1/modules/{moduleId}/heartbeat:
     post:
-      tags: [Devices]
+      tags: [Modules]
       summary: Heartbeat модуля
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/HeartbeatRequest' }
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: homeId
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: OK
-          headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
+          description: Heartbeat обновлен
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/HeartbeatResponse' }
+              schema: { $ref: '#/components/schemas/ModuleRegistrationResponse' }
         '400':
           description: Ошибка валидации
           content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-  /api/v1/devices/telemetry:
-    post:
-      tags: [Devices]
-      summary: Приём телеметрии (batch поддерживается)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/TelemetryItem'
-                - $ref: '#/components/schemas/TelemetryBatchRequest'
-      responses:
-        '202':
-          description: Принято к обработке (Kafka)
-          headers:
-            X-Request-Id: { $ref: '#/components/headers/X-Request-Id' }
-        '400':
-          description: Ошибка валидации
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-
-  /api/v1/internal/modules/{module_id}/commands:
-    post:
-      tags: [Internal]
-      summary: Отправить команду модулю
-      parameters:
-        - $ref: '#/components/parameters/ModuleId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/CommandRequest' }
-      responses:
-        '202':
-          description: Команда поставлена в очередь/отправлена
-          content:
             application/json:
-              schema: { $ref: '#/components/schemas/CommandResponse' }
-        '404':
-          description: Маршрут не найден
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
-
-  /api/v1/internal/modules/{module_id}/state:
+              schema: { $ref: '#/components/schemas/ModuleRegistrationResponse' }
+  
+  /api/v1/modules/home/{homeId}:
     get:
-      tags: [Internal]
-      summary: Прочитать состояние модуля (proxy запрос)
+      tags: [Modules]
+      summary: Получить модули по дому
       parameters:
-        - $ref: '#/components/parameters/ModuleId'
+        - name: homeId
+          in: path
+          required: true
+          schema:
+            type: string
       responses:
         '200':
-          description: Текущая телеметрия/состояние (формат зависит от типа модуля)
+          description: Список модулей
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: true
-        '404':
-          description: Маршрут не найден
+                type: array
+                items: { $ref: '#/components/schemas/ModuleRegistration' }
+  
+  /api/v1/modules/type/{moduleType}:
+    get:
+      tags: [Modules]
+      summary: Получить модули по типу
+      parameters:
+        - name: moduleType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список модулей
           content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Error' }
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ModuleRegistration' }
+  
+  /api/v1/modules:
+    get:
+      tags: [Modules]
+      summary: Получить все модули
+      responses:
+        '200':
+          description: Список всех модулей
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ModuleRegistration' }
+  
+  /api/v1/modules/{moduleId}:
+    delete:
+      tags: [Modules]
+      summary: Отменить регистрацию модуля
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: homeId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Модуль отменен
+        '404':
+          description: Модуль не найден
+  
+  /api/v1/modules/{moduleId}/proxy/**:
+    get:
+      tags: [Proxy]
+      summary: Прокси GET запрос к модулю
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ответ от модуля
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Модуль не найден
+        '500':
+          description: Ошибка проксирования
+    
+    post:
+      tags: [Proxy]
+      summary: Прокси POST запрос к модулю
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Ответ от модуля
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Модуль не найден
+        '500':
+          description: Ошибка проксирования
+    
+    put:
+      tags: [Proxy]
+      summary: Прокси PUT запрос к модулю
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Ответ от модуля
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Модуль не найден
+        '500':
+          description: Ошибка проксирования
+    
+    delete:
+      tags: [Proxy]
+      summary: Прокси DELETE запрос к модулю
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Ответ от модуля
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Модуль не найден
+        '500':
+          description: Ошибка проксирования
+    
+    patch:
+      tags: [Proxy]
+      summary: Прокси PATCH запрос к модулю
+      parameters:
+        - name: moduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+      responses:
+        '200':
+          description: Ответ от модуля
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Модуль не найден
+        '500':
+          description: Ошибка проксирования
+  
+  /api/v1/internal/test:
+    get:
+      tags: [Internal]
+      summary: Тестовый endpoint
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
 
 
