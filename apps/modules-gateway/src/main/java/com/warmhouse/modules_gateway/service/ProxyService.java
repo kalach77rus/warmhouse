@@ -94,9 +94,14 @@ public class ProxyService {
         log.info("Executing proxy request to: {} {}", method, targetUrl);
         
         try {
-            // Создаем HttpEntity с заголовками Content-Type
+            // Создаем HttpEntity с минимальными заголовками
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            // Явно убираем проблемные заголовки
+            headers.remove("Transfer-Encoding");
+            headers.remove("Connection");
+            headers.remove("Keep-Alive");
+            
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(

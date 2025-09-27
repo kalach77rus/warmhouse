@@ -10,6 +10,7 @@ services:
       - POSTGRES_DB=smarthome
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./smart_home/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -100,11 +101,9 @@ services:
     environment:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
 
-      # для интеграции с датчиком напрямую 
-      # - TEMPERATURE_API_URL=http://temperature-api:8081
+      - TEMPERATURE_API_URL=http://temperature-api:8081
 
-      # для интеграции с микросервисной архитектурой (ходим через gateway)
-      - TEMPERATURE_API_URL=http://modules-gateway:8083/api/v1/modules/temperature-module-factory-001/proxy
+      # - TEMPERATURE_API_URL=http://modules-gateway:8083/api/v1/modules/temperature-module-factory-001/proxy
     ports:
       - "8080:8080"
     restart: unless-stopped

@@ -10,9 +10,8 @@
 # Direct Temperature API Tests
 # ===========================================
 
-### Direct Temperature API Health Check
-GET {{temperatureApiUrl}}/temperature?location=test HTTP/1.1
-Host: {{host}}:{{temperaturePort}}
+### Проверим что temperature-api возвращает температуру
+GET http://localhost:8081/temperature?location=test HTTP/1.1
 Accept: application/json
 
 ### Direct Temperature API - Living Room

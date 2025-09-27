@@ -1,0 +1,11 @@
+### Проверим что temperature-api возвращает температуру
+GET http://localhost:8081/temperature?location=test HTTP/1.1
+Accept: application/json
+
+### Проверим что temperature-api подключилось к gateway
+GET http://localhost:8083/api/v1/modules
+Content-Type: application/json
+
+### Получим температуру из temperature-api через gateway
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=kitchen
+Content-Type: application/json

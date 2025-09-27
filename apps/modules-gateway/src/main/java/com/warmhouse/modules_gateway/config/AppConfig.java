@@ -10,16 +10,25 @@ public class AppConfig {
     
     @Bean
     public RestTemplate restTemplate() {
+        // Используем SimpleClientHttpRequestFactory с настройками для предотвращения chunked encoding
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(5000);
         factory.setReadTimeout(10000);
         
         RestTemplate restTemplate = new RestTemplate(factory);
         
-        // Настраиваем обработку chunked encoding
+        // Добавляем интерцептор для управления заголовками
         restTemplate.getInterceptors().add((request, body, execution) -> {
-            // Убираем Transfer-Encoding заголовок если он есть
+            // Убираем все Transfer-Encoding заголовки
             request.getHeaders().remove("Transfer-Encoding");
+            // Убираем Connection заголовки, которые могут влиять на кодирование
+            request.getHeaders().remove("Connection");
+            // Убираем Keep-Alive заголовки
+            request.getHeaders().remove("Keep-Alive");
+            // Устанавливаем Content-Length если есть тело запроса
+            if (body != null && body.length > 0) {
+                request.getHeaders().set("Content-Length", String.valueOf(body.length));
+            }
             return execution.execute(request, body);
         });
         
