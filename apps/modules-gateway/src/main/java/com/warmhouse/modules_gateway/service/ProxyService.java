@@ -91,7 +91,11 @@ public class ProxyService {
         
         String targetUrl = module.getBaseUrl() + targetPath;
         
-        log.info("Executing proxy request to: {} {}", method, targetUrl);
+        log.info("=== PROXY REQUEST START ===");
+        log.info("Target URL: {}", targetUrl);
+        log.info("Method: {}", method);
+        log.info("Target Path: {}", targetPath);
+        log.info("Body: {}", body);
         
         try {
             // Создаем HttpEntity с минимальными заголовками
@@ -102,8 +106,15 @@ public class ProxyService {
             headers.remove("Connection");
             headers.remove("Keep-Alive");
             
+            // Логируем заголовки перед отправкой
+            log.info("Request headers:");
+            headers.forEach((key, values) -> {
+                log.info("  {}: {}", key, values);
+            });
+            
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
             
+            log.info("Sending request to: {}", targetUrl);
             ResponseEntity<String> response = restTemplate.exchange(
                 targetUrl,
                 method,
@@ -111,8 +122,37 @@ public class ProxyService {
                 String.class
             );
             
-            log.info("Proxy request successful: {} {}", response.getStatusCode(), targetUrl);
-            return response;
+            log.info("=== PROXY RESPONSE ===");
+            log.info("Status Code: {}", response.getStatusCode());
+            log.info("Response Headers:");
+            response.getHeaders().forEach((key, values) -> {
+                log.info("  {}: {}", key, values);
+            });
+            log.info("Response Body: {}", response.getBody());
+            log.info("=== PROXY REQUEST END ===");
+            
+            // Создаем новый ответ без проблемных заголовков
+            HttpHeaders cleanHeaders = new HttpHeaders();
+            response.getHeaders().forEach((key, values) -> {
+                // Убираем Transfer-Encoding и Connection заголовки
+                if (!key.equalsIgnoreCase("Transfer-Encoding") && 
+                    !key.equalsIgnoreCase("Connection") && 
+                    !key.equalsIgnoreCase("Keep-Alive")) {
+                    cleanHeaders.put(key, values);
+                }
+            });
+            
+            // Устанавливаем Content-Length вместо Transfer-Encoding
+            if (response.getBody() != null) {
+                cleanHeaders.set("Content-Length", String.valueOf(response.getBody().length()));
+            }
+            
+            log.info("Cleaned response headers:");
+            cleanHeaders.forEach((key, values) -> {
+                log.info("  {}: {}", key, values);
+            });
+            
+            return new ResponseEntity<>(response.getBody(), cleanHeaders, response.getStatusCode());
             
         } catch (HttpClientErrorException e) {
             log.error("Client error during proxy request to {}: {}", targetUrl, e.getMessage());

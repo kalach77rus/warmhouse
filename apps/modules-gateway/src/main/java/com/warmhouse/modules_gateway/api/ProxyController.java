@@ -24,7 +24,20 @@ public class ProxyController {
             @PathVariable String moduleId,
             HttpServletRequest request) {
         
-        log.info("Proxying GET request to module {}: {}", moduleId, request.getRequestURI());
+        log.info("=== INCOMING REQUEST ===");
+        log.info("Module ID: {}", moduleId);
+        log.info("Request URI: {}", request.getRequestURI());
+        log.info("Query String: {}", request.getQueryString());
+        log.info("Request Method: {}", request.getMethod());
+        
+        // Логируем все входящие заголовки
+        log.info("Incoming Headers:");
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            log.info("  {}: {}", headerName, headerValue);
+        }
         
         String targetPath = extractTargetPath(request.getRequestURI(), moduleId);
         String queryString = request.getQueryString();
@@ -34,7 +47,32 @@ public class ProxyController {
             targetPath += "?" + queryString;
         }
         
-        return proxyService.proxyRequest(moduleId, HttpMethod.GET, targetPath, null, null);
+        log.info("Extracted target path: {}", targetPath);
+        log.info("=== END INCOMING REQUEST ===");
+        
+        ResponseEntity<String> response = proxyService.proxyRequest(moduleId, HttpMethod.GET, targetPath, null, null);
+        
+        // Дополнительная очистка заголовков на уровне контроллера
+        HttpHeaders cleanHeaders = new HttpHeaders();
+        response.getHeaders().forEach((key, values) -> {
+            if (!key.equalsIgnoreCase("Transfer-Encoding") && 
+                !key.equalsIgnoreCase("Connection") && 
+                !key.equalsIgnoreCase("Keep-Alive")) {
+                cleanHeaders.put(key, values);
+            }
+        });
+        
+        // Устанавливаем Content-Length
+        if (response.getBody() != null) {
+            cleanHeaders.set("Content-Length", String.valueOf(response.getBody().length()));
+        }
+        
+        log.info("Final response headers:");
+        cleanHeaders.forEach((key, values) -> {
+            log.info("  {}: {}", key, values);
+        });
+        
+        return new ResponseEntity<>(response.getBody(), cleanHeaders, response.getStatusCode());
     }
     
     @PostMapping("/{moduleId}/proxy/**")
