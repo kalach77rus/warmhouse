@@ -32,12 +32,16 @@ public class ModuleAdapter {
             command.put("data", commandData);
             
             System.out.println("Sending command to device: " + commandType + " for device " + deviceId);
+            System.out.println("Command URL: " + url);
+            System.out.println("Command data: " + command);
             
             // Отправляем команду через gateway
-            restTemplate.postForObject(url, command, Map.class);
+            Map<String, Object> response = restTemplate.postForObject(url, command, Map.class);
+            System.out.println("Command response: " + response);
             
         } catch (Exception e) {
             System.err.println("Error sending command to device: " + e.getMessage());
+            e.printStackTrace();
         }
     }
     
@@ -46,27 +50,20 @@ public class ModuleAdapter {
      */
     public HeatState readState(String deviceId) {
         try {
-            // Получаем данные о температуре от устройства через gateway
-            String url = String.format("%s/api/v1/modules/%s/proxy/temperature?location=default", gatewayUrl, deviceId);
+            // Получаем состояние отопления от устройства через gateway
+            String url = String.format("%s/api/v1/modules/%s/proxy/heat/state/%s", gatewayUrl, deviceId, deviceId);
             
-            System.out.println("Reading state from device " + deviceId);
+            System.out.println("Reading heat state from device " + deviceId);
             
-            // Получаем данные о температуре
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            // Получаем состояние отопления
+            HeatState state = restTemplate.getForObject(url, HeatState.class);
             
-            if (response != null) {
-                HeatState state = new HeatState();
-                state.setDeviceId(deviceId);
-                state.setCurrentTemperature(((Number) response.get("value")).doubleValue());
-                state.setTargetTemperature(22.0); // По умолчанию
-                state.setMode("AUTO");
-                state.setHeatingEnabled(true);
-                state.setStatus("ACTIVE");
+            if (state != null) {
                 return state;
             }
             
         } catch (Exception e) {
-            System.err.println("Error reading state from device: " + e.getMessage());
+            System.err.println("Error reading heat state from device: " + e.getMessage());
         }
         
         // Возвращаем состояние по умолчанию в случае ошибки

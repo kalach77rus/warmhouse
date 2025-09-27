@@ -1,0 +1,42 @@
+### Heat Service + Temperature API Integration Tests
+### Тестирование интеграции heat-сервиса с temperature-api через gateway
+
+### 1. Проверка работы heat-сервиса
+GET http://localhost:8082/api/v1/heat/test
+
+### 2. Получение состояния отопления (должно получить реальные данные от temperature-api)
+GET http://localhost:8082/api/v1/heat/state/temperature-module-factory-001
+
+### 3. Установка режима отопления - AUTO
+POST http://localhost:8082/api/v1/heat/commands/mode?deviceId=temperature-module-factory-001&mode=AUTO
+
+### 4. Проверка состояния после установки режима
+GET http://localhost:8082/api/v1/heat/state/temperature-module-factory-001
+
+### 5. Установка целевой температуры - комфортная
+POST http://localhost:8082/api/v1/heat/commands/temperature?deviceId=temperature-module-factory-001&temperature=22.5
+
+### 6. Проверка состояния после установки температуры
+GET http://localhost:8082/api/v1/heat/state/temperature-module-factory-001
+
+### 7. Установка режима OFF
+POST http://localhost:8082/api/v1/heat/commands/mode?deviceId=temperature-module-factory-001&mode=OFF
+
+### 8. Проверка состояния после выключения
+GET http://localhost:8082/api/v1/heat/state/temperature-module-factory-001
+
+### 9. Последовательность команд для имитации реального сценария
+### Установка режима AUTO
+POST http://localhost:8082/api/v1/heat/commands/mode?deviceId=temperature-module-factory-001&mode=AUTO
+
+### Установка комфортной температуры
+POST http://localhost:8082/api/v1/heat/commands/temperature?deviceId=temperature-module-factory-001&temperature=23.0
+
+### Проверка результата
+GET http://localhost:8082/api/v1/heat/state/temperature-module-factory-001
+
+### 10. Прямое обращение к temperature-api через gateway (для отладки)
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=default
+
+### 11. Прямое получение состояния отопления от temperature-api через gateway
+GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/heat/state/temperature-module-factory-001

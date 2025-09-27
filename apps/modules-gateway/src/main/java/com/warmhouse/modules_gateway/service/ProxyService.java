@@ -5,6 +5,7 @@ import com.warmhouse.modules_gateway.repository.ModuleRegistrationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -93,8 +94,10 @@ public class ProxyService {
         log.info("Executing proxy request to: {} {}", method, targetUrl);
         
         try {
-            // Создаем простой HttpEntity без заголовков
-            HttpEntity<String> entity = new HttpEntity<>(body);
+            // Создаем HttpEntity с заголовками Content-Type
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> entity = new HttpEntity<>(body, headers);
             
             ResponseEntity<String> response = restTemplate.exchange(
                 targetUrl,
