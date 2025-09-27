@@ -6,7 +6,7 @@ services:
     container_name: smarthome-postgres
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PASSWORD=postgres # да, я знаю что секреты надо выносить хотя бы в .env, но проверять так удобнее
       - POSTGRES_DB=smarthome
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -99,7 +99,12 @@ services:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://postgres:postgres@postgres:5432/smarthome
-      - TEMPERATURE_API_URL=http://temperature-api:8081
+
+      # для интеграции с датчиком напрямую 
+      # - TEMPERATURE_API_URL=http://temperature-api:8081
+
+      # для интеграции с микросервисной архитектурой (ходим через gateway)
+      - TEMPERATURE_API_URL=http://modules-gateway:8083/api/v1/modules/temperature-module-factory-001/proxy
     ports:
       - "8080:8080"
     restart: unless-stopped

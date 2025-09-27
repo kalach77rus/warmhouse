@@ -14,3 +14,7 @@ Content-Type: application/json
 ### 3. Proxy GET Request to Temperature Module
 GET http://localhost:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=kitchen
 Content-Type: application/json
+
+### 4
+GET http://modules-gateway:8083/api/v1/modules/temperature-module-factory-001/proxy/temperature?location=living-room
+Content-Type: application/json
