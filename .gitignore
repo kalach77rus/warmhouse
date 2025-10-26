@@ -1,1 +1,5 @@
 .DS_Store
+secrets.yaml
+config/secrets.yaml
+.env
+*.gen.go

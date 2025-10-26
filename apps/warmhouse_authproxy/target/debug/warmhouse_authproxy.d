@@ -1,0 +1,1 @@
+/home/cuz1nroman/practicum/architecture-pro-warmhouse/apps/warmhouse_authproxy/target/debug/warmhouse_authproxy: /home/cuz1nroman/practicum/architecture-pro-warmhouse/apps/warmhouse_authproxy/src/main.rs
