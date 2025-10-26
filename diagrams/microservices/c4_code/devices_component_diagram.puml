@@ -11,77 +11,86 @@ AddElementTag("queue", $bgColor="#5b9bd5", $fontColor="#ffffff")
 AddElementTag("scheduler", $bgColor="#bb8fce", $fontColor="#000000")
 
 Container_Boundary(devices, "Devices Service Application") {
-    Component(broker, "Message Broker", "RabbitMQ Controller", "Подписка на события:\n- SubscribeToAllChannels\n(generated/async)", $tags="queue")
     
-    Component(router, "Event Router", "Message Router\n/router", "Маршрутизация событий:\n- DeviceCreated\n- DeviceUpdated\n- DeviceDeleted\n- HouseDeleted\n- UserDeleted", $tags="router")
+    package "Message Layer" {
+        Component(broker, "Message Broker", "RabbitMQ Controller\n(generated/async)", "Подписка на события", $tags="queue")
+        Component(router, "Event Router", "Message Router\n/router", "Маршрутизация событий", $tags="router")
+    }
     
-    ' Gates Layer
-    Component(gates_service, "Gates Service", "Business Logic\n/services/gates", "Управление воротами:\n- CreateDevice\n- UpdateDevice\n- DeleteDevice\n- GetStatus", $tags="service")
-    Component(gates_client, "Gates API Client", "HTTP Client\n/clients/gates_api", "Взаимодействие с API:\n- GetGateStatus\n- OpenGate\n- CloseGate", $tags="client")
-    Component(gates_task, "Check Gates Status Task", "Cron Task\n/cron/check_gates_status", "Периодическая проверка\nстатуса ворот", $tags="cron")
+    package "Business Logic Layer" {
+        package "Gates Services" {
+            Component(gates_service, "Gates Service", "/services/gates", "- CreateDevice\n- UpdateDevice\n- DeleteDevice\n- GetStatus", $tags="service")
+            Component(gates_client, "Gates API Client", "/clients/gates_api", "- GetGateStatus\n- OpenGate\n- CloseGate", $tags="client")
+            Component(gates_task, "Check Gates Task", "/cron/check_gates", "Периодическая проверка", $tags="cron")
+        }
+        
+        package "Warming Services" {
+            Component(warming_service, "Warming Service", "/services/warming", "- CreateDevice\n- UpdateDevice\n- DeleteDevice\n- GetTemperature", $tags="service")
+            Component(temp_client, "Temperature Client", "/clients/temperature_api", "- GetTemperature", $tags="client")
+            Component(temp_task, "Check Temp Task", "/cron/check_temp", "Периодический сбор", $tags="cron")
+        }
+        
+        Component(scheduler, "Task Scheduler", "Cron Scheduler", "- ScheduleTask\n- Execution", $tags="scheduler")
+    }
     
-    ' Warming Layer
-    Component(warming_service, "Warming Service", "Business Logic\n/services/warming", "Управление отоплением:\n- CreateDevice\n- UpdateDevice\n- DeleteDevice\n- GetTemperature", $tags="service")
-    Component(temp_client, "Temperature API Client", "HTTP Client\n/clients/temperature_api", "Взаимодействие с API:\n- GetTemperature", $tags="client")
-    Component(temp_task, "Check Temperature Task", "Cron Task\n/cron/check_temperature", "Периодический сбор\nданных о температуре", $tags="cron")
+    package "Data Access Layer" {
+        Component(devices_repo, "Devices Repository", "/repositories/devices", "CRUD operations:\n- CreateDevice\n- GetDevice\n- UpdateDevice\n- DeleteDevice\n- SetDeviceStatus", $tags="repo")
+        Component(telemetry_repo, "Telemetry Repository", "/repositories/telemetry", "CRUD operations:\n- AddTelemetry\n- GetTelemetry", $tags="repo")
+    }
     
-    ' Repositories Layer
-    Component(devices_repo, "Devices Repository", "Data Access\n/repositories/devices", "CRUD для devices:\n- CreateDevice\n- GetDevice\n- UpdateDevice\n- DeleteDevice\n- SetDeviceStatus", $tags="repo")
-    Component(telemetry_repo, "Telemetry Repository", "Data Access\n/repositories/telemetry", "CRUD для telemetry:\n- AddTelemetry\n- GetTelemetry", $tags="repo")
+    package "Persistence Layer" {
+        ComponentDb(database, "PostgreSQL", "PostgreSQL", "Хранилище:\n- devices\n- telemetry", $tags="db")
+    }
     
-    Component(scheduler, "Task Scheduler", "Cron Scheduler", "Планирование задач:\n- ScheduleTask\n- Periodic execution", $tags="scheduler")
-    
-    ComponentDb(database, "PostgreSQL", "PostgreSQL", "Хранилище данных:\n- devices\n- telemetry", $tags="db")
-    ComponentQueue(rabbitmq, "RabbitMQ", "RabbitMQ", "Очереди сообщений", $tags="queue")
+    package "Queue Layer" {
+        ComponentQueue(rabbitmq, "RabbitMQ", "RabbitMQ", "Очереди сообщений", $tags="queue")
+    }
 }
 
-Container(gates_api, "Gates API", "gates-api", "Управление воротами\nоткрытие/закрытие")
-Container(temp_api, "Temperature API", "temperature-api", "Данные с датчиков\ntemperature")
+Container(gates_api, "Gates API", "gates-api", "Управление воротами")
+Container(temp_api, "Temperature API", "temperature-api", "Данные датчиков")
 
-' Message flow
-Rel(broker, router, "Доставляет события", "Event messages")
-Rel(rabbitmq, broker, "Публикация", "AMQP")
+' Message Flow
+Rel(rabbitmq, broker, "← Сообщения", "AMQP")
+Rel(broker, router, "→ События", "Event routing")
 
-' Router -> Services
-Rel(router, gates_service, "Маршрутизирует", "DeviceCreated\nDeviceUpdated\nDeviceDeleted", "gates")
-Rel(router, warming_service, "Маршрутизирует", "DeviceCreated\nDeviceUpdated\nDeviceDeleted", "warming")
+' Router to Services
+Rel(router, gates_service, "→ Create/Update/Delete", "DeviceCreated", "gates")
+Rel(router, warming_service, "→ Create/Update/Delete", "DeviceCreated", "warming")
 
-' Services -> Clients
-Rel(gates_service, gates_client, "Вызывает", "Go methods")
-Rel(warming_service, temp_client, "Вызывает", "Go methods")
+' Services to Clients
+Rel(gates_service, gates_client, "→ Calls", "Go methods")
+Rel(warming_service, temp_client, "→ Calls", "Go methods")
 
-' Services -> Repositories
-Rel(gates_service, devices_repo, "Читает/пишет", "Go")
-Rel(warming_service, devices_repo, "Читает/пишет", "Go")
-Rel(gates_service, telemetry_repo, "Пишет", "Go")
-Rel(warming_service, telemetry_repo, "Пишет", "Go")
+' Services to Repositories
+Rel(gates_service, devices_repo, "→ CRUD", "Go methods")
+Rel(warming_service, devices_repo, "→ CRUD", "Go methods")
+Rel(gates_service, telemetry_repo, "→ Save", "Go methods")
+Rel(warming_service, telemetry_repo, "→ Save", "Go methods")
 
-' Services -> Scheduler
-Rel(gates_service, scheduler, "Планирует задачи", "ScheduleTask")
-Rel(warming_service, scheduler, "Планирует задачи", "ScheduleTask")
+' Scheduler
+Rel(scheduler, gates_task, "→ Executes", "Run()")
+Rel(scheduler, temp_task, "→ Executes", "Run()")
+Rel(gates_service, scheduler, "→ Schedules", "ScheduleTask")
+Rel(warming_service, scheduler, "→ Schedules", "ScheduleTask")
 
-' Tasks
-Rel(scheduler, gates_task, "Выполняет", "Run()")
-Rel(scheduler, temp_task, "Выполняет", "Run()")
+' Tasks to Clients
+Rel(gates_task, gates_client, "→ Invokes", "GetGateStatus")
+Rel(temp_task, temp_client, "→ Invokes", "GetTemperature")
 
-' Tasks -> Clients
-Rel(gates_task, gates_client, "Вызывает", "GetGateStatus")
-Rel(temp_task, temp_client, "Вызывает", "GetTemperature")
+' Tasks to Repositories
+Rel(gates_task, devices_repo, "→ Updates", "SetDeviceStatus")
+Rel(temp_task, devices_repo, "→ Updates", "SetDeviceStatus")
+Rel(gates_task, telemetry_repo, "→ Writes", "AddTelemetry")
+Rel(temp_task, telemetry_repo, "→ Writes", "AddTelemetry")
 
-' Tasks -> Repositories
-Rel(gates_task, devices_repo, "Обновляет", "SetDeviceStatus")
-Rel(temp_task, devices_repo, "Обновляет", "SetDeviceStatus")
-Rel(gates_task, telemetry_repo, "Пишет", "AddTelemetry")
-Rel(temp_task, telemetry_repo, "Пишет", "AddTelemetry")
+' Clients to External APIs
+Rel(gates_client, gates_api, "→ HTTP", "REST API")
+Rel(temp_client, temp_api, "→ HTTP", "REST API")
 
-' Clients -> External APIs
-Rel(gates_client, gates_api, "HTTP requests", "REST")
-Rel(temp_client, temp_api, "HTTP requests", "REST")
-
-' Repositories -> Database
-Rel(devices_repo, database, "SQL queries", "pgx driver")
-Rel(telemetry_repo, database, "SQL queries", "pgx driver")
+' Repositories to Database
+Rel(devices_repo, database, "→ SQL", "pgx driver")
+Rel(telemetry_repo, database, "→ SQL", "pgx driver")
 
 SHOW_LEGEND()
 @enduml
-
