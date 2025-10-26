@@ -85,17 +85,25 @@
 
 **Диаграмма компонентов (Components)**
 
-![Диаграмма компонентов](diagrams/microservices/c4_components/warming_component_diagram.png)
+![Диаграмма компонентов устройства](diagrams/microservices/c4_components/devices_component_diagram.png)
+
+![Диаграмма компонентов User API](diagrams/microservices/c4_components/user_api_component_diagram.png)
+
+![Диаграмма компонентов Auth Proxy](diagrams/microservices/c4_components/authproxy_component_diagram.png)
 
 **Диаграмма кода (Code)**
 
-![Диаграмма кода](diagrams/microservices/c4_code/warming_code_diagram.png)
+![Диаграмма кода устройств](diagrams/microservices/c4_code/devices_component_diagram.png)
+
+![Диаграмма кода Smart Home](diagrams/microservices/c4_code/smart_home_component_diagram.png)
+
+![Диаграмма кода User API](diagrams/microservices/c4_code/user_api_component_diagram.png)
 
 # Задание 3. Разработка ER-диаграммы
 
 Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.
 
-![ER-диаграмма](diagrams/er_diagram.png)
+![ER-диаграмма](diagrams/microservices/er/er_diagram.png)
 
 # Задание 4. Создание и документирование API
 
@@ -199,3 +207,14 @@ Locations - название комнаты, sensorId - идентификато
 ```bash
 docker-compose up -d --build
 ```
+
+Для взаимодействия с датчиками была выбрана pull-модель исходя из заявленного API температурных датчиков.
+
+Плюсы:
+	- Простота реализации, от датчиков ничего не требуется кроме одной-двух ручек
+	- Нет необходимости в дополнительных библиотеках для работы с датчиками
+Минусы:
+	- Много "холостых" запросов, которые не дают никакой информации. Например, значение температуры не изменилось
+	- Вероятный лаг, так как температура может измениться, а запрос к датчику будет выполняться только через некоторое время.
+
+Возможно было построить решение на основе push-модели, но это потребовало бы дополнительных усилий и дополнительных ресурсов для реализации (нужна была какая-то шина данных между сервером и датчиками). Либо чтобы датчики ходили в ручку сервера.
