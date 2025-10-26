@@ -119,6 +119,9 @@
 
 Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI. Документация для микросервисов будет в файлах apps/warmhouse_user_api/api/openapi.yaml и schemas/asyncapi.yaml.
 
+[Документация API User API](apps/warmhouse_user_api/api/openapi.yaml)
+[Документация AsyncAPI](schemas/asyncapi.yaml)
+
 # Задание 5. Работа с docker и docker-compose
 
 Перейдите в apps.
