@@ -1,0 +1,46 @@
+@startuml
+!include <C4/C4_Component>
+
+AddElementTag("web", $bgColor="#cde498", $fontColor="#000000")
+AddElementTag("handler", $bgColor="#87ceeb", $fontColor="#000000")
+AddElementTag("service", $bgColor="#98d8c8", $fontColor="#000000")
+AddElementTag("client", $bgColor="#f7ccac", $fontColor="#000000")
+AddElementTag("db", $bgColor="#ff9f28", $fontColor="#ffffff")
+AddElementTag("queue", $bgColor="#5b9bd5", $fontColor="#ffffff")
+
+Container_Boundary(smarthome, "Smart Home Application") {
+    Component(httpserver, "HTTP Server", "Gin", "Обработка HTTP запросов", $tags="web")
+    Component(sensorhandler, "Sensor Handler", "Gin Handler", "Обработка запросов к датчикам\n(CRUD операции, агрегация)", $tags="handler")
+    
+    Component(db, "Database Layer", "PostgreSQL Adapter\n(db package)", "Работа с БД:\n- GetSensors\n- CreateSensor\n- UpdateSensor\n- DeleteSensor", $tags="db")
+    
+    Component(userapiclient, "User API Client", "HTTP Client\n(clients/user_api)", "Получение информации:\n- GetDefaultUser\n- DefaultHouseID", $tags="client")
+    
+    Component(tempservice, "Temperature Service", "HTTP Client\n(services)", "Получение температурных данных:\n- GetTemperature\n- GetTemperatureByID", $tags="service")
+    
+    Component(broker, "Message Broker", "RabbitMQ Controller\n(generated/async)", "Асинхронная обработка:\n- Publish messages\n- Subscribe to events", $tags="queue")
+    
+    ComponentDb(database, "PostgreSQL", "PostgreSQL", "Хранилище датчиков\n(sensors table)", $tags="db")
+    ComponentQueue(rabbitmq, "RabbitMQ", "RabbitMQ", "Очереди сообщений", $tags="queue")
+}
+
+Container(userapi, "User API", "warmhouse-user-api", "Информация о пользователях\nи домах")
+Container(tempapi, "Temperature API", "temperature-api", "Данные с датчиков")
+
+Rel(httpserver, sensorhandler, "Маршрутизация", "HTTP Requests")
+
+Rel(sensorhandler, db, "Читает/пишет", "Go methods")
+Rel(sensorhandler, userapiclient, "Получает user info", "HTTP/REST")
+Rel(sensorhandler, tempservice, "Получает temp data", "HTTP/REST")
+Rel(sensorhandler, broker, "Публикует события", "SendToDeviceCreated")
+
+Rel(db, database, "SQL queries", "pgx driver\n(CRUD)")
+Rel(userapiclient, userapi, "REST calls", "HTTP")
+Rel(tempservice, tempapi, "REST calls", "HTTP")
+Rel(broker, rabbitmq, "Pub/Sub", "AMQP")
+
+Rel_Back(rabbitmq, broker, "События", "AMQP")
+
+SHOW_LEGEND()
+@enduml
+

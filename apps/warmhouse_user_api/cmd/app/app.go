@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/warmhouse/warmhouse_user_api/internal/config"
 	"github.com/warmhouse/warmhouse_user_api/internal/generated/async"
@@ -20,7 +19,6 @@ import (
 	"github.com/warmhouse/warmhouse_user_api/internal/services/devices"
 	"github.com/warmhouse/warmhouse_user_api/internal/services/houses"
 	"github.com/warmhouse/warmhouse_user_api/internal/services/users"
-	"github.com/warmhouse/warmhouse_user_api/internal/utils"
 
 	"github.com/warmhouse/libraries/rabbitmq"
 
@@ -83,6 +81,7 @@ func Create(confPath, secretsPath string) fx.Option {
 			zap.NewProduction,
 			handlers.NewRegisterUserHandler,
 			handlers.NewLoginUserHandler,
+			handlers.NewGetDefaultUserHandler,
 			handlers.NewGetUserInfoHandler,
 			handlers.NewUpdateUserHandler,
 			handlers.NewGetUserHousesHandler,
@@ -101,6 +100,7 @@ func Create(confPath, secretsPath string) fx.Option {
 			fx.Annotate(server.HandlerWithOptions, fx.As(new(http.Handler))),
 			repositories.NewPgDriver,
 			fx.Annotate(usersrepo.NewRepository, fx.As(new(users.UsersRepository))),
+			fx.Annotate(housesrepo.NewRepository, fx.As(new(users.HousesRepository))),
 			fx.Annotate(users.NewService, fx.As(new(handlers.UsersService))),
 			fx.Annotate(housesrepo.NewRepository, fx.As(new(houses.HousesRepository))),
 			fx.Annotate(housesrepo.NewRepository, fx.As(new(devices.HouseRepository))),
@@ -112,9 +112,6 @@ func Create(confPath, secretsPath string) fx.Option {
 			fx.Annotate(rabbitmq.NewRabbitMQBrokerController, fx.As(new(extensions.BrokerController))),
 			async.NewUserController,
 			NewHTTPServer,
-			func(secrets *config.Secrets) *utils.JWTManager {
-				return utils.NewJWTManager(secrets.JWTSecret, 24*time.Hour)
-			},
 		),
 		fx.Invoke(func(server *HTTPServer) {}),
 	)

@@ -2,6 +2,7 @@ package houses
 
 import (
 	"context"
+
 	"github.com/warmhouse/warmhouse_user_api/internal/entities"
 
 	"github.com/google/uuid"
@@ -13,6 +14,7 @@ type HousesRepository interface {
 	GetHouse(ctx context.Context, houseID, userID uuid.UUID) (entities.House, error)
 	UpdateHouse(ctx context.Context, house entities.House) error
 	DeleteHouse(ctx context.Context, houseID uuid.UUID) error
+	GetOldestUserHouse(ctx context.Context, userID uuid.UUID) (entities.House, error)
 }
 
 type DevicesRepository interface {

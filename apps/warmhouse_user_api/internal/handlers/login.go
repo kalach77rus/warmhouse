@@ -3,6 +3,8 @@ package handlers
 import (
 	"context"
 	"errors"
+	"log"
+
 	"github.com/warmhouse/warmhouse_user_api/internal/generated/server"
 	"github.com/warmhouse/warmhouse_user_api/internal/services/users"
 )
@@ -34,6 +36,8 @@ func (h *LoginUserHandler) LoginUser(ctx context.Context, request server.LoginUs
 	// Вызываем сервис для аутентификации
 	response, err := h.usersService.LoginUser(ctx, request)
 	if err != nil {
+		log.Println("Error logging in user:", err)
+
 		// Проверяем тип ошибки для возврата соответствующего HTTP статуса
 		if errors.Is(err, users.ErrInvalidCredentials) {
 			return server.LoginUser401JSONResponse{

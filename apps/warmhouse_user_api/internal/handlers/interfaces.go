@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"time"
+
 	"github.com/warmhouse/warmhouse_user_api/internal/generated/server"
 
 	"github.com/google/uuid"
@@ -30,4 +31,5 @@ type UsersService interface {
 	UpdateUser(ctx context.Context, request server.UpdateUserRequestObject) (server.User, error)
 	RegisterUser(ctx context.Context, request server.RegisterUserRequestObject) (uuid.UUID, error)
 	LoginUser(ctx context.Context, request server.LoginUserRequestObject) (server.UserLoginResponse, error)
+	GetDefaultUser(ctx context.Context) (server.DefaultUserResponse, error)
 }

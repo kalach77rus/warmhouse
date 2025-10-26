@@ -9,7 +9,6 @@ import (
 
 	"github.com/warmhouse/warmhouse_user_api/internal/entities"
 	"github.com/warmhouse/warmhouse_user_api/internal/generated/server"
-	"github.com/warmhouse/warmhouse_user_api/internal/utils"
 
 	"github.com/warmhouse/libraries/convert"
 
@@ -18,14 +17,14 @@ import (
 )
 
 type Service struct {
-	usersRepository UsersRepository
-	jwtManager      *utils.JWTManager
+	usersRepository  UsersRepository
+	housesRepository HousesRepository
 }
 
-func NewService(usersRepository UsersRepository, jwtManager *utils.JWTManager) *Service {
+func NewService(usersRepository UsersRepository, housesRepository HousesRepository) *Service {
 	return &Service{
-		usersRepository: usersRepository,
-		jwtManager:      jwtManager,
+		usersRepository:  usersRepository,
+		housesRepository: housesRepository,
 	}
 }
 
@@ -99,7 +98,6 @@ func (s *Service) GetUserInfo(ctx context.Context, userID uuid.UUID) (server.Use
 }
 
 func (s *Service) LoginUser(ctx context.Context, request server.LoginUserRequestObject) (server.UserLoginResponse, error) {
-	// Получаем пользователя по email
 	user, err := s.usersRepository.GetUserByEmail(ctx, string(request.Body.Email))
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -108,19 +106,11 @@ func (s *Service) LoginUser(ctx context.Context, request server.LoginUserRequest
 		return server.UserLoginResponse{}, fmt.Errorf("error getting user: %w", err)
 	}
 
-	// Проверяем пароль
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(request.Body.Password))
 	if err != nil {
 		return server.UserLoginResponse{}, ErrInvalidCredentials
 	}
 
-	// Генерируем JWT токен
-	token, expiresAt, err := s.jwtManager.GenerateToken(user.ID, user.Email)
-	if err != nil {
-		return server.UserLoginResponse{}, fmt.Errorf("error generating token: %w", err)
-	}
-
-	// Возвращаем ответ
 	return server.UserLoginResponse{
 		User: server.User{
 			Id:        user.ID,
@@ -130,7 +120,30 @@ func (s *Service) LoginUser(ctx context.Context, request server.LoginUserRequest
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 		},
-		Token:     token,
-		ExpiresAt: expiresAt,
+	}, nil
+}
+
+func (s *Service) GetDefaultUser(ctx context.Context) (server.DefaultUserResponse, error) {
+	user, err := s.usersRepository.GetDefaultUser(ctx)
+	if err != nil {
+		return server.DefaultUserResponse{}, err
+	}
+
+	// Получаем самый давний дом пользователя
+	house, err := s.housesRepository.GetOldestUserHouse(ctx, user.ID)
+	if err != nil {
+		return server.DefaultUserResponse{}, fmt.Errorf("error getting default house: %w", err)
+	}
+
+	return server.DefaultUserResponse{
+		User: server.User{
+			Id:        user.ID,
+			Email:     user.Email,
+			Phone:     convert.FromNullString(user.Phone),
+			Name:      user.Name,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+		DefaultHouseId: house.ID,
 	}, nil
 }

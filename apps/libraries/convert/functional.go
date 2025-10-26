@@ -31,3 +31,12 @@ func FromIntToInt64[T number](value *T) *int64 {
 
 	return &int64Value
 }
+
+func PointerToValue[T any](value *T) T {
+	if value == nil {
+		var defaultValue T
+		return defaultValue
+	}
+
+	return *value
+}

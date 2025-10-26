@@ -53,7 +53,7 @@ func (s *Service) CreateDevice(ctx context.Context, payload async.DeviceCreatedM
 		checkTemperatureTask = cron.NewCheckTemperatureTask(s.devicesRepository, s.temperatureClient, s.telemetryRepository, device.ID)
 	)
 
-	if err := s.cronScheduler.AddJob(ctx, checkTemperatureDefaultSchedule, device.ID, func(ctx context.Context) error {
+	if err := s.cronScheduler.AddJob(ctx, device.Schedule, device.ID, func(ctx context.Context) error {
 		if err := checkTemperatureTask.Run(ctx); err != nil {
 			log.Println("error running check temperature task", err)
 
@@ -85,24 +85,6 @@ func (s *Service) UpdateDevice(ctx context.Context, payload async.DeviceUpdatedM
 		return err
 	}
 
-	switch {
-	case payload.Status != nil && *payload.Status != string(device.Status) && *payload.Status == string(consts.DeviceStatusActive):
-		if err := s.cronScheduler.RemoveJob(ctx, device.ID); err != nil {
-			return err
-		}
-	case payload.Status != nil && *payload.Status != string(device.Status) && *payload.Status == string(consts.DeviceStatusInactive):
-		checkTemperatureTask := cron.NewCheckTemperatureTask(s.devicesRepository, s.temperatureClient, s.telemetryRepository, device.ID)
-
-		if err := s.cronScheduler.AddJob(ctx, checkTemperatureDefaultSchedule, device.ID, func(ctx context.Context) error {
-			return checkTemperatureTask.Run(ctx)
-		}); err != nil {
-			return err
-		}
-	}
-
-	// For temperature sensors there is no direct state management through API
-	// We only update device metadata
-
 	device.Name = convert.UnwrapOr(payload.Name, device.Name)
 	device.Location = convert.UnwrapOr(payload.Location, device.Location)
 	device.SensorID = payload.SensorId
@@ -110,17 +92,43 @@ func (s *Service) UpdateDevice(ctx context.Context, payload async.DeviceUpdatedM
 	device.Unit = convert.UnwrapOr(payload.Unit, device.Unit)
 	device.Value = convert.UnwrapOr(payload.Value, device.Value)
 	device.Status = convert.UnwrapOr((*consts.DeviceStatus)(payload.Status), device.Status)
-	device.Schedule = convert.UnwrapOr(payload.Schedule, device.Schedule)
+
+	switch {
+	case (payload.Status != nil && *payload.Status != string(device.Status) && *payload.Status == string(consts.DeviceStatusActive)) ||
+		(payload.Schedule != nil && *payload.Schedule != device.Schedule):
+		if err := s.cronScheduler.RemoveJob(ctx, device.ID); err != nil {
+			return err
+		}
+
+		fallthrough
+	case (payload.Status != nil && *payload.Status != string(device.Status) && *payload.Status == string(consts.DeviceStatusInactive)) ||
+		(payload.Schedule != nil && *payload.Schedule != device.Schedule):
+		checkTemperatureTask := cron.NewCheckTemperatureTask(s.devicesRepository, s.temperatureClient, s.telemetryRepository, device.ID)
+
+		if err := s.cronScheduler.AddJob(ctx, device.Schedule, device.ID, func(ctx context.Context) error {
+			return checkTemperatureTask.Run(ctx)
+		}); err != nil {
+			return err
+		}
+	}
 
 	return s.devicesRepository.UpdateDevice(ctx, device)
 }
 
 func (s *Service) DeleteDevice(ctx context.Context, deviceID uuid.UUID) error {
 	if err := s.cronScheduler.RemoveJob(ctx, deviceID); err != nil {
+		log.Println("error removing cron job", err)
+
 		return err
 	}
 
-	return s.devicesRepository.DeleteDevice(ctx, deviceID)
+	if err := s.devicesRepository.DeleteDevice(ctx, deviceID); err != nil {
+		log.Println("error deleting device", err)
+
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) DeleteHouseDevices(ctx context.Context, houseID uuid.UUID) error {

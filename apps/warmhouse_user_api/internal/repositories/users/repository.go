@@ -77,3 +77,20 @@ func (r *Repository) GetUserByEmail(ctx context.Context, email string) (entities
 
 	return user, nil
 }
+
+func (r *Repository) GetDefaultUser(ctx context.Context) (entities.User, error) {
+	query := `
+		SELECT *
+		FROM warmhouse.users
+		ORDER BY created_at ASC
+		LIMIT 1
+	`
+
+	var user entities.User
+	err := r.driver.DB().GetContext(ctx, &user, query)
+	if err != nil {
+		return entities.User{}, fmt.Errorf("error getting default user: %w", err)
+	}
+
+	return user, nil
+}

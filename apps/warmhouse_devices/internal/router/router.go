@@ -86,7 +86,9 @@ func (r *Router) DeviceDeletedOperationReceived(ctx context.Context, msg async.D
 
 	deviceID, err := uuid.Parse(msg.Payload.DeviceId)
 	if err != nil {
-		return fmt.Errorf("invalid device id: %w", err)
+		log.Println("error parsing device id", err)
+
+		return nil
 	}
 
 	switch msg.Payload.Type {
@@ -150,10 +152,6 @@ func (r *Router) validateDeviceUpdatedMessage(msg *async.DeviceUpdatedMessageFro
 
 	if msg.Payload.Status != nil && !slices.Contains(entities.GetDeviceStatuses(), *msg.Payload.Status) {
 		return fmt.Errorf("invalid status: %s", *msg.Payload.Status)
-	}
-
-	if msg.Payload.Value != nil && !slices.Contains(getDeviceValues(), *msg.Payload.Value) {
-		return fmt.Errorf("invalid value: %s", *msg.Payload.Value)
 	}
 
 	return nil

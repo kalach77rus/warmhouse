@@ -1,11 +1,24 @@
-FROM rust:1-bullseye
+FROM golang:1.24-alpine AS builder
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
+COPY warmhouse_authproxy/go.mod warmhouse_authproxy/go.sum ./
+RUN go mod download
 
-RUN cargo build --release
+COPY warmhouse_authproxy/cmd ./cmd
+COPY warmhouse_authproxy/internal ./internal
+COPY warmhouse_authproxy/config ./config
 
-COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o warmhouse_authproxy ./cmd/main.go
 
-RUN cargo build --release
+FROM alpine:latest
+
+WORKDIR /root/
+
+COPY --from=builder /app/warmhouse_authproxy .
+
+COPY --from=builder /app/config ./config
+
+EXPOSE 8087
+
+CMD ["./warmhouse_authproxy", "-next-host", "warmhouse_user_api:8080"]

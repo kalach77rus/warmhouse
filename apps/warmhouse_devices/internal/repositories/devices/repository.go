@@ -52,7 +52,7 @@ func (r *Repository) UpdateDevice(ctx context.Context, device entities.Device) e
 	query := `
 		UPDATE warmhouse.devices
 		SET name = :name,
-			sensor_id = :sensor_id,
+			sensor_id = COALESCE(:sensor_id, sensor_id),
 			unit = :unit,
 			value = :value,
 			status = :status,
@@ -73,10 +73,10 @@ func (r *Repository) UpdateDevice(ctx context.Context, device entities.Device) e
 func (r *Repository) DeleteDevice(ctx context.Context, deviceID uuid.UUID) error {
 	query := `
 		DELETE FROM warmhouse.devices
-		WHERE id = :id
+		WHERE id = $1
 	`
 
-	_, err := r.driver.DB().NamedExecContext(ctx, query, deviceID)
+	_, err := r.driver.DB().ExecContext(ctx, query, deviceID)
 	if err != nil {
 		return fmt.Errorf("error deleting device: %w", err)
 	}
@@ -86,11 +86,11 @@ func (r *Repository) DeleteDevice(ctx context.Context, deviceID uuid.UUID) error
 
 func (r *Repository) GetHouseDevices(ctx context.Context, houseID uuid.UUID) ([]entities.Device, error) {
 	query := `
-		SELECT * FROM warmhouse.devices WHERE house_id = :house_id
+		SELECT * FROM warmhouse.devices WHERE house_id = $1
 	`
 
 	var devices []entities.Device
-	err := r.driver.DB().SelectContext(ctx, &devices, query, houseID)
+	err := r.driver.DB().SelectContext(ctx, &devices, query, houseID.String())
 	if err != nil {
 		return nil, fmt.Errorf("error getting house devices: %w", err)
 	}

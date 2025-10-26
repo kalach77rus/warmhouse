@@ -2,6 +2,7 @@ package gates
 
 import (
 	"context"
+	"log"
 
 	"github.com/google/uuid"
 	"github.com/warmhouse/libraries/convert"
@@ -53,8 +54,14 @@ func (s *Service) CreateDevice(ctx context.Context, payload async.DeviceCreatedM
 		checkGatesStatusTask = cron.NewCheckGatesStatusTask(s.devicesRepository, s.gatesClient, s.telemetryRepository, device.ID)
 	)
 
-	if err := s.cronScheduler.AddJob(ctx, checkGatesStatusDefaultSchedule, device.ID, func(ctx context.Context) error {
-		return checkGatesStatusTask.Run(ctx)
+	if err := s.cronScheduler.AddJob(ctx, device.Schedule, device.ID, func(ctx context.Context) error {
+		if err := checkGatesStatusTask.Run(ctx); err != nil {
+			log.Println("error running check gates status task", err)
+
+			return err
+		}
+
+		return nil
 	}); err != nil {
 		return err
 	}
@@ -73,13 +80,30 @@ func (s *Service) UpdateDevice(ctx context.Context, payload async.DeviceUpdatedM
 		return err
 	}
 
+	device.Name = convert.UnwrapOr(payload.Name, device.Name)
+	device.Unit = convert.UnwrapOr(payload.Unit, device.Unit)
+	device.Value = convert.UnwrapOr(payload.Value, device.Value)
+	device.Status = convert.UnwrapOr((*consts.DeviceStatus)(payload.Status), device.Status)
+	device.Location = convert.UnwrapOr(payload.Location, device.Location)
+	device.Host = convert.UnwrapOr(payload.Host, device.Host)
+	device.SensorID = payload.SensorId
+	device.Schedule = convert.UnwrapOr(payload.Schedule, device.Schedule)
+
 	switch {
 	case payload.Status != nil && *payload.Status != string(device.Status) && *payload.Status == string(consts.DeviceStatusActive):
 		err = s.gatesClient.ActivateGate(ctx, device.Host)
 		if err != nil {
 			return err
 		}
+
+		if err := s.addGatesStatusTask(ctx, device); err != nil {
+			return err
+		}
 	case payload.Status != nil && *payload.Status != string(device.Status) && *payload.Status == string(consts.DeviceStatusInactive):
+		if err := s.cronScheduler.RemoveJob(ctx, device.ID); err != nil {
+			return err
+		}
+
 		err = s.gatesClient.DeactivateGate(ctx, device.Host)
 		if err != nil {
 			return err
@@ -96,16 +120,29 @@ func (s *Service) UpdateDevice(ctx context.Context, payload async.DeviceUpdatedM
 		}
 	}
 
-	device.Name = convert.UnwrapOr(payload.Name, device.Name)
-	device.Unit = convert.UnwrapOr(payload.Unit, device.Unit)
-	device.Value = convert.UnwrapOr(payload.Value, device.Value)
-	device.Status = convert.UnwrapOr((*consts.DeviceStatus)(payload.Status), device.Status)
-	device.Location = convert.UnwrapOr(payload.Location, device.Location)
-	device.Host = convert.UnwrapOr(payload.Host, device.Host)
-	device.SensorID = payload.SensorId
-	device.Schedule = convert.UnwrapOr(payload.Schedule, device.Schedule)
+	if payload.Schedule != nil && *payload.Schedule != device.Schedule {
+		if err := s.cronScheduler.RemoveJob(ctx, device.ID); err != nil {
+			return err
+		}
+
+		if err := s.addGatesStatusTask(ctx, device); err != nil {
+			return err
+		}
+	}
 
 	return s.devicesRepository.UpdateDevice(ctx, device)
+}
+
+func (s *Service) addGatesStatusTask(ctx context.Context, device entities.Device) error {
+	checkGatesStatusTask := cron.NewCheckGatesStatusTask(s.devicesRepository, s.gatesClient, s.telemetryRepository, device.ID)
+
+	if err := s.cronScheduler.AddJob(ctx, device.Schedule, device.ID, func(ctx context.Context) error {
+		return checkGatesStatusTask.Run(ctx)
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Service) DeleteDevice(ctx context.Context, deviceID uuid.UUID) error {

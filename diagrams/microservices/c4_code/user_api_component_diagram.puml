@@ -1,0 +1,124 @@
+@startuml
+!include <C4/C4_Component>
+
+AddElementTag("web", $bgColor="#cde498", $fontColor="#000000")
+AddElementTag("handler", $bgColor="#87ceeb", $fontColor="#000000")
+AddElementTag("service", $bgColor="#98d8c8", $fontColor="#000000")
+AddElementTag("repo", $bgColor="#f7dc6f", $fontColor="#000000")
+AddElementTag("db", $bgColor="#ff9f28", $fontColor="#ffffff")
+AddElementTag("queue", $bgColor="#5b9bd5", $fontColor="#ffffff")
+
+Container_Boundary(userapi, "User API Application") {
+    Component(httpserver, "HTTP Server", "Chi", "Роутинг и обработка HTTP\nзапросов", $tags="web")
+    Component(apikeychecker, "API Key Checker", "Middleware", "Проверка API ключа\nдля internal endpoints", $tags="handler")
+    
+    ' Auth Handlers
+    Component(registerhandler, "Register Handler", "Handler\n/handlers/register.go", "Регистрация пользователей", $tags="handler")
+    Component(loginhandler, "Login Handler", "Handler\n/handlers/login.go", "Вход пользователей", $tags="handler")
+    Component(defaultuser, "Default User Handler", "Handler\n/handlers/defaultuser.go", "Получение дефолтного\nпользователя и дома", $tags="handler")
+    
+    ' User Handlers
+    Component(infohandler, "User Info Handler", "Handler\n/handlers/users_info.go", "Информация о пользователе", $tags="handler")
+    Component(updatehandler, "Update User Handler", "Handler\n/handlers/users_update.go", "Обновление пользователя", $tags="handler")
+    
+    ' House Handlers
+    Component(house_list, "Houses List Handler", "Handler\n/handlers/houses_list.go", "Список домов", $tags="handler")
+    Component(house_create, "Create House Handler", "Handler\n/handlers/houses_create.go", "Создание дома", $tags="handler")
+    Component(house_info, "House Info Handler", "Handler\n/handlers/houses_info.go", "Информация о доме", $tags="handler")
+    Component(house_update, "Update House Handler", "Handler\n/handlers/houses_update.go", "Обновление дома", $tags="handler")
+    Component(house_delete, "Delete House Handler", "Handler\n/handlers/houses_delete.go", "Удаление дома", $tags="handler")
+    
+    ' Device Handlers
+    Component(devices_list, "Devices List Handler", "Handler\n/handlers/devices_list.go", "Список устройств", $tags="handler")
+    Component(devices_create, "Create Device Handler", "Handler\n/handlers/devices_create.go", "Создание устройства", $tags="handler")
+    Component(devices_info, "Device Info Handler", "Handler\n/handlers/devices_info.go", "Информация об устройстве", $tags="handler")
+    Component(devices_update, "Update Device Handler", "Handler\n/handlers/devices_update.go", "Обновление устройства", $tags="handler")
+    Component(devices_delete, "Delete Device Handler", "Handler\n/handlers/devices_delete.go", "Удаление устройства", $tags="handler")
+    Component(devices_telemetry, "Telemetry Handler", "Handler\n/handlers/devices_telemetry.go", "Телеметрия устройства", $tags="handler")
+    
+    ' Services Layer
+    Component(users_service, "Users Service", "Service\n/services/users", "Бизнес-логика:\n- RegisterUser\n- LoginUser\n- GetDefaultUser\n- GetUserInfo\n- UpdateUser", $tags="service")
+    Component(houses_service, "Houses Service", "Service\n/services/houses", "Бизнес-логика:\n- GetUserHouses\n- CreateHouse\n- GetHouseInfo\n- UpdateHouse\n- DeleteHouse", $tags="service")
+    Component(devices_service, "Devices Service", "Service\n/services/devices", "Бизнес-логика:\n- GetUserDevices\n- CreateDevice\n- GetDeviceInfo\n- UpdateDevice\n- DeleteDevice\n- GetDeviceTelemetry", $tags="service")
+    
+    ' Repositories Layer
+    Component(users_repo, "Users Repository", "Repository\n/repositories/users", "CRUD для users:\n- CreateUser\n- GetUser\n- GetDefaultUser\n- GetUserByEmail\n- UpdateUser", $tags="repo")
+    Component(houses_repo, "Houses Repository", "Repository\n/repositories/houses", "CRUD для houses:\n- CreateHouse\n- GetHouse\n- GetUserHouses\n- GetOldestUserHouse\n- UpdateHouse\n- DeleteHouse", $tags="repo")
+    Component(devices_repo, "Devices Repository", "Repository\n/repositories/devices", "CRUD для devices:\n- CreateDevice\n- GetDevice\n- GetUserDevices\n- GetHouseDevices\n- UpdateDevice\n- DeleteDevice", $tags="repo")
+    Component(telemetry_repo, "Telemetry Repository", "Repository\n/repositories/telemetry", "CRUD для telemetry:\n- GetDeviceTelemetry", $tags="repo")
+    
+    Component(broker, "Message Broker", "RabbitMQ Controller\ngenerated/async", "Публикация событий:\n- DeviceCreated\n- HouseCreated", $tags="queue")
+    
+    ComponentDb(database, "PostgreSQL", "PostgreSQL", "Хранилище данных:\n- users\n- houses\n- devices\n- telemetry", $tags="db")
+    ComponentQueue(rabbitmq, "RabbitMQ", "RabbitMQ", "Очереди сообщений", $tags="queue")
+}
+
+' HTTP Server connections
+Rel(httpserver, apikeychecker, "Проверка ключа", "Middleware")
+
+' Auth handlers
+Rel(httpserver, registerhandler, "POST /register", "HTTP")
+Rel(httpserver, loginhandler, "POST /login", "HTTP")
+Rel(httpserver, defaultuser, "GET /internal/defaultuser", "HTTP")
+
+' User handlers
+Rel(httpserver, infohandler, "GET /users/info", "HTTP")
+Rel(httpserver, updatehandler, "PUT /users/update", "HTTP")
+
+' House handlers
+Rel(httpserver, house_list, "GET /houses", "HTTP")
+Rel(httpserver, house_create, "POST /houses/create", "HTTP")
+Rel(httpserver, house_info, "GET /houses/info", "HTTP")
+Rel(httpserver, house_update, "PUT /houses/update", "HTTP")
+Rel(httpserver, house_delete, "DELETE /houses/delete", "HTTP")
+
+' Device handlers
+Rel(httpserver, devices_list, "GET /devices", "HTTP")
+Rel(httpserver, devices_create, "POST /devices/create", "HTTP")
+Rel(httpserver, devices_info, "GET /devices/info", "HTTP")
+Rel(httpserver, devices_update, "PUT /devices/update", "HTTP")
+Rel(httpserver, devices_delete, "DELETE /devices/delete", "HTTP")
+Rel(httpserver, devices_telemetry, "GET /devices/telemetry", "HTTP")
+
+' Handler -> Service connections
+Rel(registerhandler, users_service, "Вызывает", "Go")
+Rel(loginhandler, users_service, "Вызывает", "Go")
+Rel(defaultuser, users_service, "Вызывает", "Go")
+Rel(infohandler, users_service, "Вызывает", "Go")
+Rel(updatehandler, users_service, "Вызывает", "Go")
+
+Rel(house_list, houses_service, "Вызывает", "Go")
+Rel(house_create, houses_service, "Вызывает", "Go")
+Rel(house_info, houses_service, "Вызывает", "Go")
+Rel(house_update, houses_service, "Вызывает", "Go")
+Rel(house_delete, houses_service, "Вызывает", "Go")
+
+Rel(devices_list, devices_service, "Вызывает", "Go")
+Rel(devices_create, devices_service, "Вызывает", "Go")
+Rel(devices_info, devices_service, "Вызывает", "Go")
+Rel(devices_update, devices_service, "Вызывает", "Go")
+Rel(devices_delete, devices_service, "Вызывает", "Go")
+Rel(devices_telemetry, devices_service, "Вызывает", "Go")
+
+' Service -> Repository connections
+Rel(users_service, users_repo, "Читает/пишет", "Go")
+Rel(houses_service, houses_repo, "Читает/пишет", "Go")
+Rel(devices_service, devices_repo, "Читает/пишет", "Go")
+Rel(devices_service, telemetry_repo, "Читает", "Go")
+
+' Service -> Broker connections
+Rel(houses_service, broker, "Публикует", "DeviceCreated")
+Rel(devices_service, broker, "Публикует", "HouseCreated")
+
+' Repository -> Database
+Rel(users_repo, database, "SQL запросы", "pgx driver")
+Rel(houses_repo, database, "SQL запросы", "pgx driver")
+Rel(devices_repo, database, "SQL запросы", "pgx driver")
+Rel(telemetry_repo, database, "SQL запросы", "pgx driver")
+
+' Broker -> Queue
+Rel(broker, rabbitmq, "Pub/Sub", "AMQP")
+
+SHOW_LEGEND()
+@enduml
+

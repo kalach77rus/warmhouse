@@ -85,3 +85,20 @@ func (r *Repository) DeleteHouse(ctx context.Context, houseID uuid.UUID) error {
 
 	return nil
 }
+
+func (r *Repository) GetOldestUserHouse(ctx context.Context, userID uuid.UUID) (entities.House, error) {
+	query := `
+		SELECT * FROM warmhouse.houses 
+		WHERE user_id = $1 
+		ORDER BY created_at ASC 
+		LIMIT 1
+	`
+
+	var house entities.House
+	err := r.driver.DB().GetContext(ctx, &house, query, userID)
+	if err != nil {
+		return entities.House{}, fmt.Errorf("error getting oldest user house: %w", err)
+	}
+
+	return house, nil
+}

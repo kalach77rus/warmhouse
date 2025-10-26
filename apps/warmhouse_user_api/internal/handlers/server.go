@@ -9,6 +9,7 @@ var (
 type Server struct {
 	*RegisterUserHandler
 	*LoginUserHandler
+	*GetDefaultUserHandler
 	*GetUserInfoHandler
 	*UpdateUserHandler
 	*GetUserHousesHandler
@@ -27,6 +28,7 @@ type Server struct {
 func NewServer(
 	registerUserHandler *RegisterUserHandler,
 	loginUserHandler *LoginUserHandler,
+	getDefaultUserHandler *GetDefaultUserHandler,
 	getUserInfoHandler *GetUserInfoHandler,
 	updateUserHandler *UpdateUserHandler,
 	getUserHousesHandler *GetUserHousesHandler,
@@ -44,6 +46,7 @@ func NewServer(
 	return &Server{
 		RegisterUserHandler:       registerUserHandler,
 		LoginUserHandler:          loginUserHandler,
+		GetDefaultUserHandler:     getDefaultUserHandler,
 		GetUserInfoHandler:        getUserInfoHandler,
 		UpdateUserHandler:         updateUserHandler,
 		GetUserHousesHandler:      getUserHousesHandler,
