@@ -156,7 +156,7 @@ Locations - название комнаты, sensorId - идентификато
 В результате у вас должны быть созданы Dockerfiles и docker-compose для запуска микросервисов. 
 
 ## Порядок тестирования связи микросервисов с монолитом
-Для проверки можно использовать Postman коллекцию [new-api.postman_collection.json](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/app/new-api.postman_collection.json)
+Для проверки можно использовать Postman коллекцию [new-api.postman_collection.json](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/apps/new-api.postman_collection.json)
 
 Запусти все сервисы: 
 ``` 
