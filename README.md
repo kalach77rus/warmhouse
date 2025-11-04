@@ -48,7 +48,7 @@
 
 ### 5. Визуализация контекста системы — диаграмма С4
 
-[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/schemas/context_diagram.png)
+[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/schemas/context_diagram.png)
 
 # Задание 2. Проектирование микросервисной архитектуры
 
@@ -56,22 +56,22 @@
 
 **Диаграмма контейнеров (Containers)**
 
-[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/schemas/containers_diagram.png)
+[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/schemas/containers_diagram.png)
 
 **Диаграмма компонентов (Components)**
 
 Добавьте диаграмму для каждого из выделенных микросервисов.
-[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/schemas/components_diagram.png)
+[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/schemas/components_diagram.png)
 
 **Диаграмма кода (Code)**
 
-[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/schemas/code_diagram.png)
+[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/schemas/code_diagram.png)
 
 
 # Задание 3. Разработка ER-диаграммы
 
 Добавьте сюда ER-диаграмму. Она должна отражать ключевые сущности системы, их атрибуты и тип связей между ними.
-[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/schemas/er_diagram.png)
+[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/schemas/er_diagram.png)
 
 # Задание 4. Создание и документирование API
 
@@ -86,7 +86,7 @@
 ### 2. Документация API
 
 Здесь приложите ссылки на документацию API для микросервисов, которые вы спроектировали в первой части проектной работы. Для документирования используйте Swagger/OpenAPI или AsyncAPI.
-[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/openapi.yml)
+[Ссылка на картинку с диаграмой](https://github.com/IliaOv/architecture-pro-warmhouse/blob/warmhouse/openapi.yml)
 
 # Задание 5. Работа с docker и docker-compose
 
