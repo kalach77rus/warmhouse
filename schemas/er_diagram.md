@@ -61,8 +61,9 @@ table(devices) {
   * house_id: UUID <<FK>>
   * device_type_id: UUID <<FK>>
   * name: string
+  * location: string
   * protocol: string
-  * drivers: jsonb
+  * driver: string
   * status: string
   * created_at: timestamp
   * updated_at: timestamp
