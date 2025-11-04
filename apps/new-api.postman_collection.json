@@ -1,0 +1,885 @@
+{
+    "info": {
+        "_postman_id": "f8e3a123-4567-89ab-cdef-0123456789ab",
+        "name": "Smart Home Microservices API",
+        "description": "Complete collection for testing all Smart Home microservices and their interactions",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "🏥 Health Checks",
+            "item": [
+                {
+                    "name": "Device Service Health",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/health",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["health"]
+                        },
+                        "description": "Check Device Service status"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Temperature API Health",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8081/health",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8081",
+                            "path": ["health"]
+                        },
+                        "description": "Check Temperature API status"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Lamp Service Health",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8083/health",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8083",
+                            "path": ["health"]
+                        },
+                        "description": "Check Lamp Service status"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Telemetry Service Health",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8084/health",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8084",
+                            "path": ["health"]
+                        },
+                        "description": "Check Telemetry Service status"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "📱 Device Service",
+            "item": [
+                {
+                    "name": "Get All Devices",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"]
+                        },
+                        "description": "Get all devices"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Devices by House",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/devices?house_id=b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"],
+                            "query": [
+                                {
+                                    "key": "house_id",
+                                    "value": "b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12"
+                                }
+                            ]
+                        },
+                        "description": "Get devices filtered by house"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Devices by Type",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/devices?device_type=light",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"],
+                            "query": [
+                                {
+                                    "key": "device_type",
+                                    "value": "light"
+                                }
+                            ]
+                        },
+                        "description": "Get devices filtered by type"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Device - Light",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Living Room Light\",\n    \"device_type\": \"light\",\n    \"house_id\": \"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"protocol\": \"wifi\",\n    \"driver\": \"wifi_rgb_light\",\n    \"location\": \"Living Room\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"]
+                        },
+                        "description": "Create a new light device"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Device - Thermostat",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Living Room Thermostat\",\n    \"device_type\": \"thermostat\",\n    \"house_id\": \"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"protocol\": \"zigbee\",\n    \"driver\": \"zigbee_thermostat_v2\",\n    \"location\": \"Living Room\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"]
+                        },
+                        "description": "Create a new thermostat device"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Device by ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{device_id}}",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{device_id}}"]
+                        },
+                        "description": "Get specific device details"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Device",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Updated Living Room Light\",\n    \"location\": \"Main Living Room\",\n    \"status\": \"active\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{device_id}}",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{device_id}}"]
+                        },
+                        "description": "Update device information"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Delete Device",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{device_id}}",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{device_id}}"]
+                        },
+                        "description": "Delete a device"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "💡 Lamp Service",
+            "item": [
+                {
+                    "name": "Get All Lamps",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8083/lamps",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8083",
+                            "path": ["lamps"]
+                        },
+                        "description": "Get all lamps with their states"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Toggle Lamp",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8083/lamps/{{lamp_id}}/toggle",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8083",
+                            "path": ["lamps", "{{lamp_id}}", "toggle"]
+                        },
+                        "description": "Turn lamp on/off"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Set Brightness",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"brightness\": 75\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8083/lamps/{{lamp_id}}/brightness",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8083",
+                            "path": ["lamps", "{{lamp_id}}", "brightness"]
+                        },
+                        "description": "Set lamp brightness (0-100)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "🌡️ Temperature API",
+            "item": [
+                {
+                    "name": "Get Temperature by Location",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8081/temperature?location=Living%20Room",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8081",
+                            "path": ["temperature"],
+                            "query": [
+                                {
+                                    "key": "location",
+                                    "value": "Living Room"
+                                }
+                            ]
+                        },
+                        "description": "Get temperature for specific location"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "📊 Telemetry Service",
+            "item": [
+                {
+                    "name": "Get All Telemetry",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8084/telemetry",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8084",
+                            "path": ["telemetry"]
+                        },
+                        "description": "Get all telemetry data"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Telemetry by Device",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8084/telemetry?device_id={{device_id}}",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8084",
+                            "path": ["telemetry"],
+                            "query": [
+                                {
+                                    "key": "device_id",
+                                    "value": "{{device_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Get telemetry for specific device"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Telemetry Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8084/telemetry/stats",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8084",
+                            "path": ["telemetry", "stats"]
+                        },
+                        "description": "Get telemetry statistics"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Send Telemetry Data",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"device_id\": \"{{device_id}}\",\n    \"metric_type\": \"temperature\",\n    \"value\": 22.5,\n    \"unit\": \"celsius\",\n    \"metadata\": {\n        \"location\": \"Living Room\",\n        \"source\": \"test\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8084/telemetry",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8084",
+                            "path": ["telemetry"]
+                        },
+                        "description": "Send telemetry data"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "🔄 Device Commands",
+            "item": [
+                {
+                    "name": "Send Command - Turn On Light",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"action\": \"turn_on\",\n    \"parameters\": {\n        \"brightness\": 80\n    },\n    \"priority\": \"normal\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{lamp_id}}/commands",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{lamp_id}}", "commands"]
+                        },
+                        "description": "Send turn on command to lamp via Device Service"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Send Command - Set Brightness",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"action\": \"set_brightness\",\n    \"parameters\": {\n        \"brightness\": 50\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{lamp_id}}/commands",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{lamp_id}}", "commands"]
+                        },
+                        "description": "Send set brightness command to lamp"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Send Command - Set Temperature",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"action\": \"set_temperature\",\n    \"parameters\": {\n        \"temperature\": 23.5,\n        \"mode\": \"heat\"\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{thermostat_id}}/commands",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{thermostat_id}}", "commands"]
+                        },
+                        "description": "Send temperature command to thermostat"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "🔗 Integration Tests",
+            "item": [
+                {
+                    "name": "Full Flow - Create and Control Lamp",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Test Integration Lamp\",\n    \"device_type\": \"light\",\n    \"house_id\": \"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"protocol\": \"wifi\",\n    \"driver\": \"wifi_rgb_light\",\n    \"location\": \"Test Room\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"]
+                        },
+                        "description": "Step 1: Create a new lamp device"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Check Lamp in Lamp Service",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8083/lamps",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8083",
+                            "path": ["lamps"]
+                        },
+                        "description": "Step 2: Verify lamp appears in lamp service"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Control Lamp via Device Service",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"action\": \"turn_on\",\n    \"parameters\": {\n        \"brightness\": 90\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{new_lamp_id}}/commands",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{new_lamp_id}}", "commands"]
+                        },
+                        "description": "Step 3: Control lamp through device service"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Check Telemetry Data",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8084/telemetry?device_id={{new_lamp_id}}",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8084",
+                            "path": ["telemetry"],
+                            "query": [
+                                {
+                                    "key": "device_id",
+                                    "value": "{{new_lamp_id}}"
+                                }
+                            ]
+                        },
+                        "description": "Step 4: Verify telemetry was recorded"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+    "name": "🏢 Monolith Integration",
+    "item": [
+        {
+            "name": "Monolith Health Check",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/health",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8080",
+                    "path": ["health"]
+                },
+                "description": "Check monolith status and service connectivity"
+            },
+            "response": []
+        },
+        {
+            "name": "Get Devices via Monolith",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/api/v1/devices",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8080",
+                    "path": ["api", "v1", "devices"]
+                },
+                "description": "Get devices through monolith (proxied to device-service)"
+            },
+            "response": []
+        },
+        {
+            "name": "Get Lamps via Monolith",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/api/v1/devices/lamps",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8080",
+                    "path": ["api", "v1", "devices", "lamps"]
+                },
+                "description": "Get lamps through monolith (proxied to lamp-service)"
+            },
+            "response": []
+        },
+        {
+            "name": "Get Devices by Type via Monolith",
+            "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                    "raw": "http://localhost:8080/api/v1/devices?device_type=light",
+                    "protocol": "http",
+                    "host": ["localhost"],
+                    "port": "8080",
+                    "path": ["api", "v1", "devices"],
+                    "query": [
+                        {
+                            "key": "device_type",
+                            "value": "light"
+                        }
+                    ]
+                },
+                "description": "Get filtered devices through monolith"
+            },
+            "response": []
+        },
+        {
+            "name": "Integration Flow - Monolith to Microservices",
+            "item": [
+                {
+                    "name": "Step 1: Create Device via Device Service",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Monolith Test Lamp\",\n    \"device_type\": \"light\",\n    \"house_id\": \"b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a12\",\n    \"protocol\": \"wifi\",\n    \"driver\": \"wifi_rgb_light\",\n    \"location\": \"Monolith Test Room\"\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"]
+                        },
+                        "description": "Create device directly via device-service"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Step 2: Verify via Monolith",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/api/v1/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "v1", "devices"]
+                        },
+                        "description": "Check if monolith sees the new device"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Step 3: Verify via Lamp Service",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/api/v1/devices/lamps",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "v1", "devices", "lamps"]
+                        },
+                        "description": "Check if monolith can get lamp data from lamp-service"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Step 4: Control via Monolith (Future)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"action\": \"turn_on\",\n    \"parameters\": {\n        \"brightness\": 75\n    }\n}"
+                        },
+                        "url": {
+                            "raw": "http://localhost:8082/devices/{{monolith_device_id}}/commands",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices", "{{monolith_device_id}}", "commands"]
+                        },
+                        "description": "Control device (monolith would proxy this in future)"
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Data Consistency Check",
+            "item": [
+                {
+                    "name": "Get Devices from Device Service",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8082/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8082",
+                            "path": ["devices"]
+                        },
+                        "description": "Get devices directly from device-service"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Devices from Monolith",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8080/api/v1/devices",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8080",
+                            "path": ["api", "v1", "devices"]
+                        },
+                        "description": "Get same devices through monolith"
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Compare Responses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "http://localhost:8083/lamps",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8083",
+                            "path": ["lamps"]
+                        },
+                        "description": "Compare with lamp-service data"
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ]
+}
+    ],
+    "event": [
+        {
+            "listen": "prerequest",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "console.log('Starting request to ' + request.url);"
+                ]
+            }
+        },
+        {
+            "listen": "test",
+            "script": {
+                "type": "text/javascript",
+                "exec": [
+                    "pm.test(\"Status code is 200\", function () {",
+                    "    pm.response.to.have.status(200);",
+                    "});",
+                    "",
+                    "pm.test(\"Response has success flag\", function () {",
+                    "    var jsonData = pm.response.json();",
+                    "    pm.expect(jsonData.success).to.be.true;",
+                    "});"
+                ]
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8082",
+            "type": "string"
+        },
+        {
+            "key": "monolithUrl", 
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "device_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "lamp_id",
+            "value": "1",
+            "type": "string"
+        },
+        {
+            "key": "thermostat_id",
+            "value": "2",
+            "type": "string"
+        },
+        {
+            "key": "new_lamp_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "monolith_device_id",
+            "value": "",
+            "type": "string"
+        }
+    ]
+}

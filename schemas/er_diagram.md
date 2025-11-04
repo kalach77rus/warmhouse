@@ -69,11 +69,12 @@ table(devices) {
   * updated_at: timestamp
 }
 
-table(telemetry_data) {
+table(telemetry) {
   + id: UUID <<PK>>
   --
   * device_id: UUID <<FK>>
   * value: decimal
+  * metric_type: string
   * unit: string
   * created_at: timestamp
 }
@@ -90,6 +91,6 @@ users }o--|| user_modules : "приобретает"
 modules }o--|| user_modules : "включается_в"
 
 ' Один-ко-многим (телеметрия)
-devices ||--o{ telemetry_data : "генерирует"
+devices ||--o{ telemetry : "генерирует"
 
 @enduml

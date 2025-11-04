@@ -27,10 +27,23 @@ func main() {
 
 	log.Println("Connected to database successfully")
 
-	// Initialize temperature service
+	// Initialize external services
 	temperatureAPIURL := getEnv("TEMPERATURE_API_URL", "http://temperature-api:8081")
+	deviceServiceURL := getEnv("DEVICE_SERVICE_URL", "http://device-service:8082")
+	lampServiceURL := getEnv("LAMP_SERVICE_URL", "http://lamp-service:8083")
+	telemetryServiceURL := getEnv("TELEMETRY_SERVICE_URL", "http://telemetry-service:8084")
+
+	// Initialize services
 	temperatureService := services.NewTemperatureService(temperatureAPIURL)
-	log.Printf("Temperature service initialized with API URL: %s\n", temperatureAPIURL)
+	deviceService := services.NewDeviceService(deviceServiceURL)
+	lampService := services.NewLampService(lampServiceURL)
+	telemetryService := services.NewTelemetryService(telemetryServiceURL)
+
+	log.Printf("External services initialized:")
+	log.Printf("  Temperature API: %s\n", temperatureAPIURL)
+	log.Printf("  Device Service: %s\n", deviceServiceURL)
+	log.Printf("  Lamp Service: %s\n", lampServiceURL)
+	log.Printf("  Telemetry Service: %s\n", telemetryServiceURL)
 
 	// Initialize router
 	router := gin.Default()
@@ -39,15 +52,26 @@ func main() {
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"status": "ok",
+			"services": gin.H{
+				"database":         "connected",
+				"temperature_api":  "available",
+				"device_service":   "available", 
+				"lamp_service":     "available",
+				"telemetry_service": "available",
+			},
 		})
 	})
 
 	// API routes
 	apiRoutes := router.Group("/api/v1")
 
-	// Register sensor routes
+	// Register sensor routes (legacy)
 	sensorHandler := handlers.NewSensorHandler(database, temperatureService)
 	sensorHandler.RegisterRoutes(apiRoutes)
+
+	// NEW: Register device routes that use microservices
+	deviceHandler := handlers.NewDeviceHandler(deviceService, lampService, telemetryService)
+	deviceHandler.RegisterRoutes(apiRoutes)
 
 	// Start server
 	srv := &http.Server{
