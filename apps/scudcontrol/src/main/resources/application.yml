@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: scud-controller
+
+server:
+  port: 8088
+  servlet:
+    context-path: /scudcontrol
