@@ -1,0 +1,251 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8088/scudcontrol",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/{id}": {
+      "put": {
+        "tags": [
+          "scud-controller"
+        ],
+        "operationId": "updateScud",
+        "parameters": [
+          {
+            "name": "opened",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "scud-controller"
+        ],
+        "operationId": "deleteScud",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/": {
+      "post": {
+        "tags": [
+          "scud-controller"
+        ],
+        "operationId": "createScud",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Device"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getStatusById/{id}": {
+      "get": {
+        "tags": [
+          "scud-controller"
+        ],
+        "operationId": "getStatusById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/getScudParametersById/{id}": {
+      "get": {
+        "tags": [
+          "scud-controller"
+        ],
+        "operationId": "getScudById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/SCUDControlDevice"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/all": {
+      "get": {
+        "tags": [
+          "scud-controller"
+        ],
+        "operationId": "getAll",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SCUDControlDevice"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "MOSCOW",
+              "ST_PETERSBURG"
+            ]
+          },
+          "lastUpdate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SCUDControlDevice": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string",
+            "enum": [
+              "MOSCOW",
+              "ST_PETERSBURG"
+            ]
+          },
+          "lastUpdate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "opened": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
