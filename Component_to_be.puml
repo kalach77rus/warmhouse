@@ -1,0 +1,35 @@
+@startuml
+title Warmhouse Application Component Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(Warmhouse, "Warmhouse System") {
+  Container(TemperatureService, "Temperature Service", "Go", "Processes Temperature data")
+
+}
+
+Container(TemperatureService, "Temperature Service", "Go", "Processes Temperature data") {
+  Component(MN, "Main", "__")
+  Component(DB, "Database", "__")
+  Component(HS, "Handlers", "__")
+  Component(MS, "Models", "__")
+  Component(SS, "Services", "__")
+ }
+
+System_Ext(Browser, "Browser", "External Browser for communication with Warmhouse system")
+System_Ext(api, "Device API", "External API for communication with Devices")
+
+
+Rel(MN,DB,"Reads/Writes data")
+Rel(MN,HS,"Reads/Writes data")
+Rel(MN,SS,"Reads/Writes data")
+Rel(DB,MS,"Reads/Writes data")
+Rel(HS,DB,"Reads/Writes data")
+Rel(HS,MS,"Reads/Writes data")
+Rel(HS,SS,"Reads/Writes data")
+Rel(SS,api,"Reads/Writes data")
+Rel(Browser,MN,"Reads/Writes data")
+
+@enduml
