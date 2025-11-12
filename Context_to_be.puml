@@ -1,0 +1,36 @@
+@startuml
+title Warmhouse Context Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(SA, "Super-admin", "A super-admin of a system, adding admins and users")
+Person(user, "User", "A user of Warmhouse system")
+Person(Admin, "Admin", "admin of a system, might be a service company or resources company employee, adding users and managing object")
+
+
+System(SHS, "SmartBuilding System", "System providing set of functions for houses smartisation both private and communal")
+
+
+System_Ext(ResSup, "Resource Supply", "External billing and CRM System of resources supplyer")
+System_Ext(Bill, "Billing", "External billing System for Smarthouse services")
+System_Ext(INV, "Inventory", "External Inventory System for Smarthouse devices and materials")
+System_Ext(CCTV, "CCTV platform", "External CCTV Platform for video surveilance puproses")
+System_Ext(Pay, "Payment system", "External payment system for Sart services and provided resources")
+System_Ext(api, "Device API", "External API for communication with Devices")
+
+
+Rel(SA, SHS, "Uses the system to manage all admins, users and objects in a System")
+Rel(Admin, SHS, "Uses the system to manage temperature in a house")
+Rel(user, SHS, "Uses the system to manage temperature in a house")
+
+Rel(SHS,INV,"Fetches warehouse data")
+Rel(SHS,CCTV,"Video services")
+Rel(SHS,Bill,"Billing for our services")
+Rel(SHS,Pay,"Payments for our services and resources")
+Rel(SHS,ResSup,"Consumed resources data and bills for it, communication with support")
+Rel(SHS,api,"Fetches Smart devices data")
+
+
+@enduml

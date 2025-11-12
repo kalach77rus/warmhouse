@@ -1,0 +1,24 @@
+@startuml
+title Warmhouse Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "User", "A user of Warmhouse system")
+
+System(WHSystem, "Warmhouse System", "System registering sensors, managing temperature, showing temperature set")
+
+Container_Boundary(WHSystem, "Warmhouse System") {
+  Container(TMPS, "Temperature-service", "Go", "Processes Temperature data")
+}
+
+System_Ext(Browser, "Browser", "External Browser for communication with Warmhouse system")
+System_Ext(api, "Device API", "External API for communication with Devices")
+
+Rel(user, Browser, "Uses the system")
+Rel(Browser, TMPS, "Uses the system")
+
+
+Rel(TMPS,api,"Fetches Sensor data")
+@enduml

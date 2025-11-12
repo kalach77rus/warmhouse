@@ -1,0 +1,54 @@
+@startuml
+!include C4_Context.puml
+!include C4_Container.puml
+!include C4_Component.puml
+!include C4_Deployment.puml
+
+class scudcontrol.model.SCUDControlDevice {
+- boolean opened
+}
+
+class scudcontrol.model.Device {
+- String id
+- String type
+- String location
+- String status
+- Regions region
+- Instant lastUpdate
+- Instant created
+}
+
+class scudcontrol.controller.ScudController {
+- SCUDControlService scudControlService
++ ResponseEntity<Boolean> getStatusById(String)
++ SCUDControlDevice getScudById(String)
++ ResponseEntity<List<SCUDControlDevice>> getAll()
++ ResponseEntity<String> createScud(Device)
++ void deleteScud(String)
++ void updateScud(Boolean,String)
+}
+
+
+class scudcontrol.ScudcontrolApplication {
++ {static} void main(String[])
+}
+
+class scudcontrol.service.SCUDControlService {
+- Map<String,SCUDControlDevice> devices
++ String createScud(Device)
++ void deleteScud(String)
++ void updateScud(String,boolean)
++ SCUDControlDevice getScud(String)
++ List<SCUDControlDevice> getAllScuds()
+}
+
+
+enum scudcontrol.model.Regions {
++  MOSCOW
++  ST_PETERSBURG
+}
+
+
+
+scudcontrol.model.Device <|-- scudcontrol.model.SCUDControlDevice
+@enduml

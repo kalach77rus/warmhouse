@@ -1,0 +1,61 @@
+@startuml
+title Warmhouse Container Diagram
+
+top to bottom direction
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Component.puml
+
+Person(SA, "Super-admin", "A super-admin of a system, adding admins and users")
+Person(user, "User", "A user of Warmhouse system")
+Person(Admin, "Admin", "admin of a system, might be a service company or resources company employee, adding users and managing object")
+
+System(SBSystem, "SmartBuilding System", "System providing set of functions for houses smartisation both private and communal")
+
+Container_Boundary(SBSystem, "SmartBuilding System") {
+  Container(SAWebApp, "Super-admin Web app", "--", "provides interface for super-admin")
+  Container(WebApp, "Web app", "--", "provides interface for super-admin and admin")
+  Container(MobApp, "Mobile App", "Kotlin, Swift", "provides interface for users")
+  Container(SBS, "Smart_home monolith", "Java", "Processes Temperature data")
+  Container(TempAPI, "Temperature-api", "Java", "Processes Temperature data")
+  Container(SCUD, "SCUD system", "Java", "Processes Temperature data")
+  Container(LCS, "Light control", "Java", "Processes Temperature data")
+  Container(Auth, "Authorisation System", "Java", "")
+  Container(APIM, "API-GW", "Java", "")
+  }
+
+
+System_Ext(api, "Device API", "External API for communication with Devices")
+System_Ext(ResSup, "Resource Supply", "External billing and CRM System of resources supplyer")
+System_Ext(Bill, "Billing", "External billing System for Smarthouse services")
+System_Ext(INV, "Inventory", "External Inventory System for Smarthouse devices and materials")
+System_Ext(CCTV, "CCTV platform", "External CCTV Platform for video surveilance puproses")
+System_Ext(Pay, "Payment system", "External payment system for Sart services and provided resources")
+
+
+Rel(user, MobApp, "Uses the system")
+Rel(SA, SAWebApp, "Uses the system to manage all admins, users and objects in a System")
+Rel(SA, WebApp, "Uses the system to manage all admins, users and objects in a System")
+Rel(Admin, WebApp, "Uses the system to manage users and objects in a System")
+Rel(Admin, MobApp, "Uses the system to manage users and objects in a System")
+
+Rel(MobApp, Auth, "Uses the system")
+Rel(SAWebApp, Auth, "Uses the system")
+Rel(WebApp, Auth, "Uses the system")
+
+Rel(Auth, TempAPI, "")
+Rel(Auth, SCUD, "")
+Rel(Auth, LCS, "")
+
+Rel(SBS, APIM, "")
+Rel(TempAPI, APIM, "")
+Rel(TempAPI, SBS, "")
+Rel(SCUD, APIM, "")
+Rel(LCS, APIM, "")
+
+Rel(APIM,api,"Fetches Sensor data")
+Rel(APIM,ResSup,"")
+Rel(APIM,Bill,"")
+Rel(APIM,INV,"")
+Rel(APIM,CCTV,"")
+Rel(APIM,Pay,"")
+@enduml
